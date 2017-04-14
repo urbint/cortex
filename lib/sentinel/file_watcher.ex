@@ -17,10 +17,10 @@ defmodule Sentinel.FileWatcher do
       Regex.match?(~r/\/(\w|_)+\.exs?/, path)
 
     cond do
-      is_elixir_file? and Regex.match?(~r/\/lib\//, path) ->
+      is_elixir_file? and Regex.match?(~r/lib\//, path) ->
         :lib
 
-      is_elixir_file? and Regex.match?(~r/\/test\//, path) ->
+      is_elixir_file? and Regex.match?(~r/test\//, path) ->
         :test
 
       true ->
