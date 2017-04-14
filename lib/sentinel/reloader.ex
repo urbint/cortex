@@ -13,7 +13,7 @@ defmodule Sentinel.Reloader do
   end
 
 
-  @spec reload_file(Path.t) :: :ok | {:error, String.t}
+  @spec reload_file(Path.t) :: :ok
   def reload_file(path) do
     GenServer.call(__MODULE__, {:reload_file, path})
   end
@@ -53,11 +53,21 @@ defmodule Sentinel.Reloader do
 
     Code.compiler_options(ignore_module_conflict: true)
 
-    Code.load_file(path)
+    result =
+      try do
+        Code.load_file(path)
+        :ok
+      rescue
+        ex in [SyntaxError, CompileError] ->
+          %{line: _line, file: _file, description: desc} =
+            ex
+
+          {:error, desc}
+      end
 
     Code.compiler_options(restore_opts)
     
-    {:reply, :ok, state}
+    {:reply, result, state}
   end
 
   def handle_call({:recompile}, _from, state) do

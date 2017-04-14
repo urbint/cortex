@@ -4,7 +4,7 @@ defmodule Sentinel.Controller do
 
   require Logger
 
-  alias Sentinel.{Reloader}
+  alias Sentinel.{Reloader,TestRunner}
 
 
   ##########################################

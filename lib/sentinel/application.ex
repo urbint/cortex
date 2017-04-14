@@ -3,7 +3,7 @@ defmodule Sentinel.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  alias Sentinel.{FileWatcher,Controller,Reloader}
+  alias Sentinel.{FileWatcher,Controller,Reloader,TestRunner}
 
   use Application
 
@@ -14,15 +14,16 @@ defmodule Sentinel.Application do
       Mix.env in [:dev, :test] ->
         children = [
           FileWatcher.child_spec,
+          worker(Reloader, []),
           worker(Controller, [])
         ]
 
         env_specific_children =
           case Mix.env do
             :dev ->
-              [worker(Reloader, [])]
-            _ ->
               []
+            :test ->
+              [worker(TestRunner, [])]
           end
 
         opts = [strategy: :one_for_one, name: Sentinel.Supervisor]
