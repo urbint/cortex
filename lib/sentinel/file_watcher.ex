@@ -1,29 +1,30 @@
 defmodule Sentinel.FileWatcher do
   @moduledoc false
-  use GenServer
 
-  alias __MODULE__.Worker
+  alias Sentinel.Controller
 
-  ##########################################
-  # Public API
-  ##########################################
+  use ExFSWatch, dirs: ["lib/", "test/", "apps/"]
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  def callback(:stop), do: :ok
+
+  def callback(path, _events) do
+    GenServer.cast(Controller, {:file_changed, file_type(path), path})
   end
 
-  ##########################################
-  # GenServer Callbacks
-  ##########################################
-  
-  def init(_) do
-    Worker.start
-    {:ok, %{}}
-  end
 
-  def handle_cast({:file_changed, type, path}, state) do
-    IO.puts "File changed: #{type} #{path}"
+  def file_type(path) do
+    is_elixir_file? =
+      Regex.match?(~r/\/(\w|_)+\.exs?/, path)
 
-    {:noreply, state}
+    cond do
+      is_elixir_file? and Regex.match?(~r/test/, path) ->
+        :test
+
+      is_elixir_file? and Regex.match?(~r/lib/, path) ->
+        :lib
+
+      true ->
+        :unknown
+    end
   end
 end
