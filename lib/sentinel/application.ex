@@ -3,20 +3,24 @@ defmodule Sentinel.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  alias Sentinel.FileWatcher
+
   use Application
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
-    children = [
-      # Starts a worker by calling: Sentinel.Worker.start_link(arg1, arg2, arg3)
-      # worker(Sentinel.Worker, [arg1, arg2, arg3]),
-    ]
+    cond do
+      Mix.env in [:dev, :test] ->
+        children = [
+          worker(FileWatcher, [])
+        ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Sentinel.Supervisor]
-    Supervisor.start_link(children, opts)
+        opts = [strategy: :one_for_one, name: Sentinel.Supervisor]
+        Supervisor.start_link(children, opts)
+
+      true ->
+        {:error, "Only :dev and :test environments are allowed"}
+    end
   end
 end
