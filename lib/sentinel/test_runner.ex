@@ -99,6 +99,7 @@ defmodule Sentinel.TestRunner do
     if Mix.Project.umbrella? do
       app_name =
         path
+        |> Path.relative_to_cwd
         |> String.split("/")
         |> Enum.at(1)
 
