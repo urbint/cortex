@@ -3,7 +3,7 @@ defmodule Sentinel.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  alias Sentinel.{FileWatcher,Controller}
+  alias Sentinel.{FileWatcher,Controller,Reloader}
 
   use Application
 
@@ -17,8 +17,17 @@ defmodule Sentinel.Application do
           worker(Controller, [])
         ]
 
+        env_specific_children =
+          case Mix.env do
+            :dev ->
+              [worker(Reloader, [])]
+            _ ->
+              []
+          end
+
         opts = [strategy: :one_for_one, name: Sentinel.Supervisor]
-        Supervisor.start_link(children, opts)
+
+        Supervisor.start_link(children ++ env_specific_children, opts)
 
       true ->
         {:error, "Only :dev and :test environments are allowed"}
