@@ -1,19 +1,26 @@
 # Sentinel
 
-**TODO: Add description**
+Sentinel watches your Elixir files and automatically runs tests for newly 
+updated modules.
+
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `sentinel` to your list of dependencies in `mix.exs`:
+Getting started with Sentinel is easy. Add the following to your `mix.exs` file:
 
 ```elixir
 def deps do
-  [{:sentinel, "~> 0.1.0"}]
+  [{:sentinel, git: "git@github.com:urbint/sentinel.git"}]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/sentinel](https://hexdocs.pm/sentinel).
 
+## Umbrella Applications
+
+If you're running an umbrella application, add Sentinel to the dependencies of 
+each of the sub-apps that you would like Sentinel to monitor. Do this instead 
+of adding it as a dependency in the root `mix.exs` file.
+
+This is necessary because dependencies in the root `mix.exs` in umbrella 
+application are not automatically started, which is a process that Sentinel
+depends on.
