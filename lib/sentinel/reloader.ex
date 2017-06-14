@@ -13,7 +13,7 @@ defmodule Sentinel.Reloader do
   end
 
 
-  @spec reload_file(Path.t) :: :ok
+  @spec reload_file(Path.t) :: :ok | {:error, binary}
   def reload_file(path) do
     GenServer.call(__MODULE__, {:reload_file, path})
   end
@@ -26,7 +26,7 @@ defmodule Sentinel.Reloader do
   ##########################################
   # Controller Stage Callbacks
   ##########################################
-  
+
   def file_changed(:lib, path) do
     if File.exists?(path) do
       reload_file(path)
@@ -36,12 +36,13 @@ defmodule Sentinel.Reloader do
   end
   def file_changed(_, _), do: :ok
 
+  def cancel_on_error?, do: true
 
 
   ##########################################
   # GenServer Callbacks
   ##########################################
-  
+
   def init(_) do
     {:ok, %{}}
   end
@@ -58,15 +59,21 @@ defmodule Sentinel.Reloader do
         Code.load_file(path)
         :ok
       rescue
-        ex in [SyntaxError, CompileError] ->
-          %{line: _line, file: _file, description: desc} =
+        ex in [SyntaxError, CompileError, ArgumentError] ->
+          %{__struct__: struct, line: line, file: file, description: desc} =
             ex
+
+          error_type =
+            Module.split(struct) |> Enum.reverse() |> hd()
+
+          desc =
+            "#{error_type} in #{file}:#{line}:\n\n\t#{desc}\n"
 
           {:error, desc}
       end
 
     Code.compiler_options(restore_opts)
-    
+
     {:reply, result, state}
   end
 

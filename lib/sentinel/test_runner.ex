@@ -45,7 +45,7 @@ defmodule Sentinel.TestRunner do
         :not_found
     end
   end
-  
+
 
 
   @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
@@ -56,18 +56,19 @@ defmodule Sentinel.TestRunner do
   ##########################################
   # Controller Stage Callbacks
   ##########################################
-  
+
   def file_changed(relevant, path) when relevant in [:lib, :test] do
     run_tests_for_file(path)
   end
   def file_changed(_, _), do: :ok
 
+  def cancel_on_error?, do: false
 
 
   ##########################################
   # GenServer Callbacks
   ##########################################
-  
+
   def init(_) do
     Application.ensure_started(:ex_unit)
     {:ok, %{}}
@@ -79,19 +80,31 @@ defmodule Sentinel.TestRunner do
         {:reply, :ok, state}
 
       test_path ->
-        task =
-          Task.async(ExUnit, :run, [])
-
         files_to_load =
           [test_helper(path), test_path]
 
-        files_to_load
-        |> Enum.each(&Reloader.reload_file/1)
+        compiler_errors =
+          files_to_load
+          |> Stream.map(&Reloader.reload_file/1)
+          |> Enum.reject(&(&1 == :ok))
 
-        ExUnit.Server.cases_loaded()
-        Task.await(task, :infinity)
+        with [] <- compiler_errors do
+          task =
+            Task.async(ExUnit, :run, [])
 
-        {:reply, :ok, state}
+          ExUnit.Server.cases_loaded()
+          Task.await(task, :infinity)
+
+          {:reply, :ok, state}
+        else
+          errors ->
+            compiler_error_descs =
+              errors
+              |> Stream.map(&elem(&1, 1))
+              |> Enum.join("\n")
+
+            {:reply, {:error, compiler_error_descs}, state}
+        end
     end
   end
 
