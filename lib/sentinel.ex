@@ -12,6 +12,7 @@ defmodule Sentinel do
       :world
 
   """
+  @spec hello() :: any
   def hello do
     :world
   end
