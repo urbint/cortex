@@ -3,7 +3,7 @@ defmodule Sentinel.FileWatcher do
 
   alias Sentinel.Controller
 
-  use ExFSWatch, dirs: ["lib/", "test/", "apps/"]
+  use ExFSWatch, dirs: ["lib/", "test/", "apps/"] |> Enum.filter(&File.dir?/1)
 
   def callback(:stop), do: :ok
 
