@@ -27,14 +27,15 @@ defmodule Sentinel.Reloader do
   # Controller Stage Callbacks
   ##########################################
 
-  def file_changed(:lib, path) do
-    if File.exists?(path) do
-      reload_file(path)
+  def file_changed(:lib, path), do: reload_or_recompile(path)
+
+  def file_changed(:test, path) do
+    if Path.extname(path) == ".ex" do
+      reload_or_recompile(path)
     else
-      recompile()
+      :ok
     end
   end
-  def file_changed(_, _), do: :ok
 
   def cancel_on_error?, do: true
 
@@ -80,5 +81,18 @@ defmodule Sentinel.Reloader do
   def handle_call({:recompile}, _from, state) do
     IEx.Helpers.recompile()
     {:reply, :ok, state}
+  end
+
+
+  ##########################################
+  # Private Helpers
+  ##########################################
+
+  defp reload_or_recompile(path) do
+    if File.exists?(path) do
+      reload_file(path)
+    else
+      recompile()
+    end
   end
 end

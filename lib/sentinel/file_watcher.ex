@@ -5,6 +5,7 @@ defmodule Sentinel.FileWatcher do
 
   use ExFSWatch, dirs: ["lib/", "test/", "apps/"] |> Enum.filter(&File.dir?/1)
 
+
   def callback(:stop), do: :ok
 
   def callback(path, _events) do
