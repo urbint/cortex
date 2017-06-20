@@ -37,6 +37,8 @@ defmodule Sentinel.Reloader do
     end
   end
 
+  def file_changed(:unknown, _), do: :ok
+
   def cancel_on_error?, do: true
 
 
