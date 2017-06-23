@@ -1,3 +1,5 @@
+# <img src='https://storage.googleapis.com/ub-public/cortex_logo.png' height='60'>
+
 # Cortex
 
 Cortex watches your Elixir files and automatically runs tests for newly
