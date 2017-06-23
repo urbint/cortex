@@ -14,9 +14,30 @@ Getting started with Cortex is easy. Add the following to your `mix.exs` file:
 ```elixir
 def deps do
   [
-    {:cortex, "0.1"},
+    {:cortex, "0.1", only: [:dev, :test]},
   ]
 end
+```
+
+
+## Usage
+
+Cortex runs automatically along-side your mix app.
+
+```sh
+iex -S mix
+```
+
+This is enough to get live-reload on file change when editing your app.
+
+### Test Runner
+
+When you run your app with `MIX_ENV=test`,
+Cortex will automatically run tests for saved `test` files,
+as well as tests paired with saved files in `lib`.
+
+```sh
+MIX_ENV=test iex -S mix
 ```
 
 
@@ -29,7 +50,6 @@ of adding it as a dependency in the root `mix.exs` file.
 This is necessary because dependencies in the root `mix.exs` in umbrella
 application are not automatically started, which is a process that Cortex
 depends on.
-
 
 ## Roadmap
 
