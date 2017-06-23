@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :sentinel, key: :value
+#     config :cortex, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:sentinel, :key)
+#     Application.get_env(:cortex, :key)
 #
 # Or configure a 3rd-party app:
 #

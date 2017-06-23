@@ -1,13 +1,29 @@
-defmodule Sentinel.Mixfile do
+defmodule Cortex.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :sentinel,
+    [app: :cortex,
      version: "0.1.0",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     source_url: "https://github.com/urbint/cortex",
+     deps: deps(),
+     package: package(),
+     description: description(),
+    ]
+  end
+
+  defp description do
+    "Cortex is the intelligent coding assistant for Elixir."
+  end
+
+  defp package do
+    [
+     maintainers: ["Russell Matney", "Ryan Schmukler", "Urbint"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/urbint/cortex"}
+    ]
   end
 
   # Configuration for the OTP application
@@ -16,7 +32,7 @@ defmodule Sentinel.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
-     mod: {Sentinel.Application, []}]
+     mod: {Cortex.Application, []}]
   end
 
   # Dependencies can be Hex packages:

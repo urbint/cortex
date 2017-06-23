@@ -1,7 +1,7 @@
-defmodule Sentinel.FileWatcher do
+defmodule Cortex.FileWatcher do
   @moduledoc false
 
-  alias Sentinel.Controller
+  alias Cortex.Controller
 
   use ExFSWatch, dirs: ["lib/", "test/", "apps/"] |> Enum.filter(&File.dir?/1)
 

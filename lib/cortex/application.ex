@@ -1,9 +1,9 @@
-defmodule Sentinel.Application do
+defmodule Cortex.Application do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
 
-  alias Sentinel.{FileWatcher,Controller,Reloader,TestRunner}
+  alias Cortex.{FileWatcher,Controller,Reloader,TestRunner}
 
   use Application
 
@@ -26,7 +26,7 @@ defmodule Sentinel.Application do
               [worker(TestRunner, [])]
           end
 
-        opts = [strategy: :one_for_one, name: Sentinel.Supervisor]
+        opts = [strategy: :one_for_one, name: Cortex.Supervisor]
 
         Supervisor.start_link(children ++ env_specific_children, opts)
 

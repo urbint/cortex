@@ -1,7 +1,7 @@
-defmodule Sentinel.FileWatcherTest do
+defmodule Cortex.FileWatcherTest do
   use ExUnit.Case
 
-  alias Sentinel.FileWatcher
+  alias Cortex.FileWatcher
 
   test "file_type" do
     assert FileWatcher.file_type("test/some_file.exs") == :test

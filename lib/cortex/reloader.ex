@@ -1,7 +1,7 @@
-defmodule Sentinel.Reloader do
+defmodule Cortex.Reloader do
   use GenServer
 
-  @behaviour Sentinel.Controller.Stage
+  @behaviour Cortex.Controller.Stage
 
   ##########################################
   # Public API

@@ -1,10 +1,10 @@
-defmodule Sentinel.Controller do
+defmodule Cortex.Controller do
   @moduledoc false
   use GenServer
 
   require Logger
 
-  alias Sentinel.{Reloader,TestRunner}
+  alias Cortex.{Reloader,TestRunner}
 
 
   ##########################################
@@ -94,11 +94,11 @@ defmodule Sentinel.Controller do
               result_and_continue?(stage, result)
 
             {:exit, reason} ->
-              Logger.error "[Sentinel] Pipeline stage exited unexpectedly (reason: #{inspect reason}). Dying."
+              Logger.error "[Cortex] Pipeline stage exited unexpectedly (reason: #{inspect reason}). Dying."
               raise RuntimeError, "Unexpected crash of pipeline stage process"
 
             nil ->
-              Logger.error "[Sentinel] Timed out waiting for pipeline stage. Dying horribly in a fire"
+              Logger.error "[Cortex] Timed out waiting for pipeline stage. Dying horribly in a fire"
               raise RuntimeError, "Timed out waiting for pipeline stage"
           end)
           |> Enum.unzip()
@@ -116,7 +116,7 @@ defmodule Sentinel.Controller do
 
   defp log_stage(:ok), do: :ok
   defp log_stage({:error, reason}) do
-    Logger.warn "[Sentinel] Received error from pipeline stage!"
+    Logger.warn "[Cortex] Received error from pipeline stage!"
     Logger.warn reason
   end
 

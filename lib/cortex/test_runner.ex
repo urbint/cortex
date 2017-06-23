@@ -1,11 +1,11 @@
-defmodule Sentinel.TestRunner do
+defmodule Cortex.TestRunner do
   @moduledoc false
   use GenServer
 
 
-  alias Sentinel.Reloader
+  alias Cortex.Reloader
 
-  @behaviour Sentinel.Controller.Stage
+  @behaviour Cortex.Controller.Stage
 
   ##########################################
   # Public API

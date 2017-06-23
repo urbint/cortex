@@ -1,9 +1,9 @@
-defmodule Sentinel.ReloaderTest do
+defmodule Cortex.ReloaderTest do
   use ExUnit.Case
 
-  alias Sentinel.Reloader
+  alias Cortex.Reloader
 
-  @fixture_path Application.get_env(:sentinel, :fixture_path, "test/fixtures")
+  @fixture_path Application.get_env(:cortex, :fixture_path, "test/fixtures")
 
   defp fixture_for(path) do
     Path.join(@fixture_path, path)

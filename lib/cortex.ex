@@ -1,6 +1,6 @@
-defmodule Sentinel do
+defmodule Cortex do
   @moduledoc """
-  Documentation for Sentinel.
+  Documentation for Cortex.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Sentinel do
 
   ## Examples
 
-      iex> Sentinel.hello
+      iex> Cortex.hello
       :world
 
   """

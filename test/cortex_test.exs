@@ -1,6 +1,6 @@
-defmodule SentinelTest do
+defmodule CortexTest do
   use ExUnit.Case
-  doctest Sentinel
+  doctest Cortex
 
   test "the truth" do
     assert 1 + 1 == 2
