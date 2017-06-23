@@ -14,7 +14,7 @@ Getting started with Cortex is easy. Add the following to your `mix.exs` file:
 ```elixir
 def deps do
   [
-    {:cortex, "0.1", only: [:dev, :test]},
+    {:cortex, "~> 0.1", only: [:dev, :test]},
   ]
 end
 ```

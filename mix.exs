@@ -46,7 +46,8 @@ defmodule Cortex.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:exfswatch, "~> 0.4"}
+      {:exfswatch, "~> 0.4"},
+      {:ex_dash, "~> 0.1.0", only: [:dev]},
     ]
   end
 end

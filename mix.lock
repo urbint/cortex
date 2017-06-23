@@ -1,1 +1,6 @@
-%{"exfswatch": {:hex, :exfswatch, "0.4.1", "008db817f6096eec69d17c7ca562c572fb4409728a09f465dea7e31190fb983c", [:mix], []}}
+%{"earmark": {:hex, :earmark, "1.2.2", "f718159d6b65068e8daeef709ccddae5f7fdc770707d82e7d126f584cd925b74", [:mix], []},
+  "ex_dash": {:hex, :ex_dash, "0.1.5", "cec8f0820f88539eeba71e88e12f64db1588c443e92216d881512097d88ef0ad", [:mix], [{:ex_doc, "~> 0.15", [hex: :ex_doc, optional: false]}, {:floki, "~> 0.14.0", [hex: :floki, optional: false]}]},
+  "ex_doc": {:hex, :ex_doc, "0.16.1", "b4b8a23602b4ce0e9a5a960a81260d1f7b29635b9652c67e95b0c2f7ccee5e81", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, optional: false]}]},
+  "exfswatch": {:hex, :exfswatch, "0.4.1", "008db817f6096eec69d17c7ca562c572fb4409728a09f465dea7e31190fb983c", [:mix], []},
+  "floki": {:hex, :floki, "0.14.0", "91a6be57349e10a63cf52d7890479a19012cef9185fa93c305d4fe42e6a50dee", [:mix], [{:mochiweb, "~> 2.15", [hex: :mochiweb, optional: false]}]},
+  "mochiweb": {:hex, :mochiweb, "2.15.0", "e1daac474df07651e5d17cc1e642c4069c7850dc4508d3db7263a0651330aacc", [:rebar3], []}}
