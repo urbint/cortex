@@ -7,6 +7,12 @@ Cortex is the intelligent coding assistant for Elixir.
 - Accepts pluggable adapters for custom builds
 
 
+## Demo
+
+# <img src='http://files.slingingcode.com/113N1q2n2e0Q/small.gif'>
+
+
+
 ## Installation
 
 Getting started with Cortex is easy. Add the following to your `mix.exs` file:
