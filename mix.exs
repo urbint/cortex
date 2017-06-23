@@ -20,7 +20,13 @@ defmodule Cortex.Mixfile do
 
   defp package do
     [
-     maintainers: ["Russell Matney", "Ryan Schmukler", "Urbint"],
+     maintainers: [
+       "Russell Matney",
+       "Ryan Schmukler",
+       "William Carroll",
+       "Justin DeMaris",
+       "Urbint"
+     ],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/urbint/cortex"}
     ]
