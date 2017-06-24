@@ -61,7 +61,7 @@ depends on.
 
  - [x] Reload Modules
  - [x] Rerun tests
- - [ ] [Credo](https://github.com/rrrene/credohttps://github.com/rrrene/credo) runner
+ - [ ] [Credo](https://github.com/rrrene/credo) runner
  - [ ] [Dialyzer](https://github.com/jeremyjh/dialyxir/) runner
  - [ ] [ExDash](https://github.com/urbint/ex_dash) runner
  - [ ] Custom mix task runner
