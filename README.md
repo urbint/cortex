@@ -47,6 +47,35 @@ MIX_ENV=test iex -S mix
 ```
 
 
+## Enabling and Disabling
+
+Whether cortex runs at all can be configured via the configuration of your
+application. By default cortex does run.
+
+```ex
+config :cortex,
+  enabled: false
+```
+
+Cortex also supports the Elixir / Erlang convention of a
+`{:system, ENV_VAR_NAME, default_value}` in the config file.
+
+
+For example, if you wanted to have cortex disabled in your project by default,
+you could add the following to your `config.exs`:
+
+```ex
+config :cortex,
+  enabled: {:system, "CORTEX_ENABLED", false}
+```
+
+Then, to run cortex you would start `iex` with the following options:
+
+```
+CORTEX_ENABLED=true iex -S mix
+```
+
+
 ## Umbrella Applications
 
 If you're running an umbrella application, add Cortex to the dependencies of
