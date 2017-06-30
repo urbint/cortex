@@ -67,3 +67,7 @@ depends on.
  - [ ] Custom mix task runner
  - [ ] Cortex 'focus' mode
  - [ ] Broader OTP reload support
+
+## License
+
+This software is licensed under [the MIT license](LICENSE.md).
