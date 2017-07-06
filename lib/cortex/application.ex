@@ -46,7 +46,7 @@ defmodule Cortex.Application do
 
 
   defp enabled? do
-    case Application.get_env(:cortex, :enabled, true) do
+    case Application.get_env(:cortex, :enabled) do
       bool when is_boolean(bool) ->
         bool
       {:system, env_var, default} ->

@@ -12,7 +12,6 @@ Cortex is the intelligent coding assistant for Elixir.
 # <img src='http://files.slingingcode.com/113N1q2n2e0Q/small.gif'>
 
 
-
 ## Installation
 
 Getting started with Cortex is easy. Add the following to your `mix.exs` file:
@@ -26,6 +25,18 @@ end
 ```
 
 
+### Umbrella Applications
+
+If you're running an umbrella application, add Cortex to the dependencies of
+each of the sub-apps that you would like Cortex to monitor. Do this instead
+of adding it as a dependency in the root `mix.exs` file.
+
+This is necessary because dependencies in the root `mix.exs` in umbrella
+application are not automatically started, which is a process that Cortex
+depends on.
+
+
+
 ## Usage
 
 Cortex runs automatically along-side your mix app.
@@ -35,6 +46,17 @@ iex -S mix
 ```
 
 This is enough to get live-reload on file change when editing your app.
+
+
+#### Phoenix
+
+If you are running a phoenix application,
+make sure you are running the app in interactive mode:
+
+```sh
+iex -S mix phoenix.server
+```
+
 
 ### Test Runner
 
@@ -76,16 +98,6 @@ CORTEX_ENABLED=true iex -S mix
 ```
 
 
-## Umbrella Applications
-
-If you're running an umbrella application, add Cortex to the dependencies of
-each of the sub-apps that you would like Cortex to monitor. Do this instead
-of adding it as a dependency in the root `mix.exs` file.
-
-This is necessary because dependencies in the root `mix.exs` in umbrella
-application are not automatically started, which is a process that Cortex
-depends on.
-
 ## Roadmap
 
  - [x] Reload Modules
@@ -96,6 +108,7 @@ depends on.
  - [ ] Custom mix task runner
  - [ ] Cortex 'focus' mode
  - [ ] Broader OTP reload support
+
 
 ## License
 

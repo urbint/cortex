@@ -38,7 +38,9 @@ defmodule Cortex.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
-     mod: {Cortex.Application, []}]
+     mod: {Cortex.Application, []},
+     env: [enabled: true]
+    ]
   end
 
   # Dependencies can be Hex packages:
