@@ -63,14 +63,18 @@ defmodule Cortex.Reloader do
         :ok
       rescue
         ex in [SyntaxError, CompileError, ArgumentError] ->
-          %{__struct__: struct, line: line, file: file, description: desc} =
-            ex
-
-          error_type =
-            Module.split(struct) |> Enum.reverse() |> hd()
-
           desc =
-            "#{error_type} in #{file}:#{line}:\n\n\t#{desc}\n"
+            case ex do
+              %{__struct__: struct, line: line, file: file, description: desc} ->
+
+              error_type =
+                Module.split(struct) |> Enum.reverse() |> hd()
+
+              "#{error_type} in #{file}:#{line}:\n\n\t#{desc}\n"
+
+              %{message: message} ->
+                message
+            end
 
           {:error, desc}
       end
