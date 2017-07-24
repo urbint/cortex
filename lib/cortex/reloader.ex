@@ -15,12 +15,12 @@ defmodule Cortex.Reloader do
 
   @spec reload_file(Path.t) :: :ok | {:error, binary}
   def reload_file(path) do
-    GenServer.call(__MODULE__, {:reload_file, path})
+    GenServer.call(__MODULE__, {:reload_file, path}, :infinity)
   end
 
   @spec recompile() :: :ok
   def recompile() do
-    GenServer.call(__MODULE__, {:recompile})
+    GenServer.call(__MODULE__, {:recompile}, :infinity)
   end
 
   ##########################################

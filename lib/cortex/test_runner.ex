@@ -50,7 +50,7 @@ defmodule Cortex.TestRunner do
 
   @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
   def run_tests_for_file(path, opts \\ []) do
-    GenServer.call(__MODULE__, {:run_tests_for_file, path, opts})
+    GenServer.call(__MODULE__, {:run_tests_for_file, path, opts}, :infinity)
   end
 
   ##########################################
