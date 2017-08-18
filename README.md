@@ -108,6 +108,7 @@ CORTEX_ENABLED=true iex -S mix
  - [ ] Custom mix task runner
  - [ ] Cortex 'focus' mode
  - [ ] Broader OTP reload support
+ - [ ] Autofetch dependencies when `mix.exs` changes `deps`
 
 
 ## License
