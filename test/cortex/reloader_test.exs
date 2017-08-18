@@ -9,30 +9,30 @@ defmodule Cortex.ReloaderTest do
     Path.join(@fixture_path, path)
   end
 
-  describe "recompiles files" do
-    test "recompiles a file" do
-      path = fixture_for("hello.ex")
 
-      {:reply, :ok, _} =
-        Reloader.handle_call({:reload_file, path}, nil, %{})
+  describe "reload_file/1" do
+    test "loads a file from a path" do
+      path =
+        fixture_for("hello.ex")
 
+      assert :ok = Reloader.reload_file(path)
       assert Hello.hi() == "hello"
 
-      path = fixture_for("hello_2.ex")
+      path =
+        fixture_for("hello_2.ex")
 
-      {:reply, :ok, _} =
-        Reloader.handle_call({:reload_file, path}, nil, %{})
-
+      assert :ok = Reloader.reload_file(path)
       assert Hello.hi() == "goodbye"
     end
 
     test "exposes a compilation error" do
       path = fixture_for("hello_compile_fail.ex")
 
-      {:reply, {:error, desc}, _} =
-        Reloader.handle_call({:reload_file, path}, nil, %{})
+      {:error, reason} =
+        Reloader.reload_file(path)
 
-      assert Regex.match?(~r/spec for undefined function/, desc)
+      assert String.contains?(reason, "spec for undefined function")
     end
   end
+
 end

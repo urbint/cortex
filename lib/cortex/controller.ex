@@ -1,62 +1,52 @@
 defmodule Cortex.Controller do
-  @moduledoc false
-  use GenServer
+  @moduledoc """
+  Module responsible for receiving events from the `FileWatcher` and executing the appropriate
+  pipeline.
+
+  """
 
   require Logger
 
-  alias Cortex.{Reloader,TestRunner}
+  alias Cortex.{FileWatcher, Reloader, TestRunner}
+
+  use GenServer
+
 
 
   ##########################################
   # Public API
   ##########################################
 
+  @spec start_link :: GenServer.on_start
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
+
+
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
+  @impl GenServer
   def init(_) do
     pipeline =
       case Mix.env do
-        :dev -> [Reloader]
+        :dev  -> [Reloader]
         :test -> [Reloader, TestRunner]
       end
 
     {:ok, %{pipeline: pipeline}}
   end
 
+
+  @impl GenServer
   def handle_cast({:file_changed, type, path}, %{pipeline: pipeline} = state) do
     run_pipeline(pipeline, type, path)
 
     {:noreply, state}
   end
 
-
-  ##########################################
-  # Stage Module
-  ##########################################
-
-  defmodule Stage do
-    @doc """
-    Invoked any time a file is changed by the file watcher.
-
-    The first argument is the type of the file (`:lib`, `:test`, or `:unknown`),
-    and the second is the path of the file.
-
-    """
-    @callback file_changed(atom, Path.t) :: :ok | {:error, any}
-
-
-    @doc """
-    Returns a boolean for whether or not an error should cancel the rest of the pipeline.
-
-    """
-    @callback cancel_on_error? :: boolean
-  end
 
 
   ##########################################
@@ -73,8 +63,12 @@ defmodule Cortex.Controller do
     end
   end
 
-  def run_pipeline([], _type, _path), do: :ok
-  def run_pipeline([stage | rest], type, path) do
+
+  @spec run_pipeline(stages :: [module], FileWatcher.file_type, Path.t) :: :ok
+  defp run_pipeline([], _type, _path),
+    do: :ok
+
+  defp run_pipeline([stage | rest], type, path) do
     {results, continue?} =
       case stage do
         single when is_atom(single) ->
@@ -114,7 +108,13 @@ defmodule Cortex.Controller do
     end
   end
 
-  defp log_stage(:ok), do: :ok
+
+  @spec log_stage(stage_result) :: :ok | {:error, reason}
+        when stage_result: :ok | {:error, reason},
+             reason: any
+  defp log_stage(:ok),
+    do: :ok
+
   defp log_stage({:error, reason}) do
     Logger.warn "[Cortex] Received error from pipeline stage!"
     Logger.warn reason

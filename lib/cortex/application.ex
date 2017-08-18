@@ -7,6 +7,12 @@ defmodule Cortex.Application do
 
   use Application
 
+
+
+  ##########################################
+  # Public API
+  ##########################################
+
   def start(_type, _args) do
     cond do
       Mix.env in [:dev, :test] ->
@@ -23,6 +29,12 @@ defmodule Cortex.Application do
         {:error, "Only :dev and :test environments are allowed"}
     end
   end
+
+
+
+  ##########################################
+  # Private Helpers
+  ##########################################
 
   defp children() do
     import Supervisor.Spec, warn: false

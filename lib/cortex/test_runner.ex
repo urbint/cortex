@@ -1,11 +1,19 @@
 defmodule Cortex.TestRunner do
-  @moduledoc false
-  use GenServer
+  @moduledoc """
+  `Cortex.Controller.Stage` module responsible for running a changed file's associated tests.
 
+  See the `Cortex.Controller.Stage`module for more information about Cortex's stages.
+
+  """
 
   alias Cortex.Reloader
+  alias Cortex.Controller.Stage
 
-  @behaviour Cortex.Controller.Stage
+  use GenServer
+
+  @behaviour Stage
+
+
 
   ##########################################
   # Public API
@@ -17,6 +25,12 @@ defmodule Cortex.TestRunner do
   end
 
 
+  @doc """
+  Resolves `path` to the associated test file.
+
+  If `path` is already pointing to a test file, then `path` is returned to the caller unaltered.
+
+  """
   @spec test_file_for_path(Path.t) :: Path.t | :not_found
   def test_file_for_path(path) do
     is_test_file? =
@@ -47,34 +61,49 @@ defmodule Cortex.TestRunner do
   end
 
 
+  @doc """
+  Runs the tests associated with the file pointed to by `path`.
 
-  @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
-  def run_tests_for_file(path, opts \\ []) do
-    GenServer.call(__MODULE__, {:run_tests_for_file, path, opts}, :infinity)
+  This function is invoked when a file-change event is received.
+
+  """
+  @spec run_tests_for_file(Path.t) :: :ok | {:error, String.t}
+  def run_tests_for_file(path) do
+    GenServer.call(__MODULE__, {:run_tests_for_file, path}, :infinity)
   end
+
+
 
   ##########################################
   # Controller Stage Callbacks
   ##########################################
 
-  def file_changed(relevant, path) when relevant in [:lib, :test] do
-    run_tests_for_file(path)
-  end
-  def file_changed(_, _), do: :ok
+  @impl Stage
+  def file_changed(relevant, path) when relevant in [:lib, :test],
+    do: run_tests_for_file(path)
 
+  def file_changed(:unknown, _path),
+    do: :ok
+
+
+  @impl Stage
   def cancel_on_error?, do: false
+
 
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
+  @impl GenServer
   def init(_) do
     Application.ensure_started(:ex_unit)
     {:ok, %{}}
   end
 
-  def handle_call({:run_tests_for_file, path, _opts}, _from, state) do
+
+  @impl GenServer
+  def handle_call({:run_tests_for_file, path}, _from, state) do
     case test_file_for_path(path) do
       :not_found ->
         {:reply, :ok, state}
@@ -108,6 +137,13 @@ defmodule Cortex.TestRunner do
     end
   end
 
+
+
+  ##########################################
+  # Private Helpers
+  ##########################################
+
+  @spec test_helper(Path.t) :: Path.t
   defp test_helper(path) do
     if Mix.Project.umbrella? do
       app_name =
