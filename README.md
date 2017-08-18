@@ -102,6 +102,8 @@ CORTEX_ENABLED=true iex -S mix
 
  - [x] Reload Modules
  - [x] Rerun tests
+ - [x] Reload all modules and run all tests from the IEx shell
+ - [ ] Reload and run tests for a specific module from the IEx shell
  - [ ] [Credo](https://github.com/rrrene/credo) runner
  - [ ] [Dialyzer](https://github.com/jeremyjh/dialyxir/) runner
  - [ ] [ExDash](https://github.com/urbint/ex_dash) runner

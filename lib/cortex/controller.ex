@@ -19,6 +19,8 @@ defmodule Cortex.Controller do
     GenServer.call(__MODULE__, :get_pipeline, timeout)
   end
 
+  def run_all, do: GenServer.cast(__MODULE__, :run_all)
+
   ##########################################
   # GenServer Callbacks
   ##########################################
@@ -26,7 +28,7 @@ defmodule Cortex.Controller do
   def init(_) do
     pipeline =
       case Mix.env do
-        :dev -> [Reloader]
+        :dev  -> [Reloader]
         :test -> [Reloader, TestRunner]
       end
 
@@ -34,8 +36,12 @@ defmodule Cortex.Controller do
   end
 
   def handle_cast({:file_changed, type, path}, %{pipeline: pipeline} = state) do
-    run_pipeline(pipeline, type, path)
+    run_pipeline(pipeline, {:file, type, path})
+    {:noreply, state}
+  end
 
+  def handle_cast(:run_all, %{pipeline: pipeline} = state) do
+    run_pipeline(pipeline, :all)
     {:noreply, state}
   end
 
@@ -48,6 +54,11 @@ defmodule Cortex.Controller do
   ##########################################
 
   defmodule Stage do
+    @typedoc """
+    The type of the results to all stage commands
+    """
+    @type result :: :ok | {:error, any}
+
     @doc """
     Invoked any time a file is changed by the file watcher.
 
@@ -55,12 +66,12 @@ defmodule Cortex.Controller do
     and the second is the path of the file.
 
     """
-    @callback file_changed(atom, Path.t) :: :ok | {:error, any}
+    @callback file_changed(atom, Path.t) :: result
 
     @doc """
     Run this stage on all possible files
     """
-    @callback run_all() :: :ok | {:error, any}
+    @callback run_all() :: result
 
     @doc """
     Returns a boolean for whether or not an error should cancel the rest of the pipeline.
@@ -74,23 +85,26 @@ defmodule Cortex.Controller do
   # Private Functions
   ##########################################
 
-  defmacrop result_and_continue?(stage, result) do
-    quote do
-      if unquote(stage).cancel_on_error?() and match?({:error, _}, unquote(result)) do
-        {unquote(result), false}
-      else
-        {unquote(result), true}
-      end
+  @type command :: {:file, atom, Path.t} | :all
+
+  @spec run_pipeline([module], command) :: :ok | :error
+  def run_pipeline([], _command), do: :ok
+  def run_pipeline([stage | rest], command) do
+    {results, continue?} = call_stage(stage, &run_stage_command(&1, command))
+    results |> List.wrap |> Enum.each(&log_stage/1)
+
+    if continue? do
+      run_pipeline(rest, command)
+    else
+      :error
     end
   end
 
-  def run_pipeline([], _type, _path), do: :ok
-  def run_pipeline([stage | rest], type, path) do
-    {results, continue?} = call_stage(stage, &(&1.file_changed(type, path)))
-    results |> List.wrap |> Enum.each(&log_stage/1)
-
-    if continue?, do: run_pipeline(rest, type, path)
+  @spec run_stage_command(module, command) :: Stage.result
+  defp run_stage_command(stage, {:file, type, path}) do
+    stage.file_changed(type, path)
   end
+  defp run_stage_command(stage, :all), do: stage.run_all
 
   defp call_stage(stage, cb) when is_atom(stage) do
     result = cb.(stage)
