@@ -47,15 +47,13 @@ iex -S mix
 
 This is enough to get live-reload on file change when editing your app.
 
+### Commands
 
-#### Phoenix
+Some commands intended to be used via the shell are provided in the `Cortex`
+module:
 
-If you are running a phoenix application,
-make sure you are running the app in interactive mode:
-
-```sh
-iex -S mix phoenix.server
-```
+- `Cortex.all` - run all stages (currently reload and test runner) on all files
+  in the project
 
 
 ### Test Runner
@@ -95,6 +93,16 @@ Then, to run cortex you would start `iex` with the following options:
 
 ```
 CORTEX_ENABLED=true iex -S mix
+```
+
+
+## Phoenix
+
+If you are running a phoenix application,
+make sure you are running the app in interactive mode:
+
+```sh
+iex -S mix phoenix.server
 ```
 
 
