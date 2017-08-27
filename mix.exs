@@ -52,7 +52,7 @@ defmodule Cortex.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:file_system, "~> 0.1"},
+      {:file_system, "~> 0.2"},
       {:ex_dash, "~> 0.1.0", only: [:dev]},
     ]
   end
