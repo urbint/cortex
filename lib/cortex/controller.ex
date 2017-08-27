@@ -15,6 +15,7 @@ defmodule Cortex.Controller do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+
   ##########################################
   # GenServer Callbacks
   ##########################################

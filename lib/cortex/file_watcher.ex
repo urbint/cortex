@@ -3,21 +3,37 @@ defmodule Cortex.FileWatcher do
 
   alias Cortex.Controller
 
+  require Logger
+
   use GenServer
 
-  require Logger
+  @watched_dirs ["lib/", "test/", "apps/"]
+
+  ##########################################
+  # Public API
+  ##########################################
 
   def start_link do
     GenServer.start_link(__MODULE__, [])
   end
 
+
+  ##########################################
+  # GenServer Callbacks
+  ##########################################
+
   def init(_) do
-    dirs = ["lib/", "test/", "apps/"] |> Enum.filter(&File.dir?/1)
-    {:ok, watcher_pid} = FileSystem.start_link(dirs: dirs)
+    dirs =
+      @watched_dirs
+      |> Enum.filter(&File.dir?/1)
+
+    {:ok, watcher_pid} =
+      FileSystem.start_link(dirs: dirs)
+
     FileSystem.subscribe(watcher_pid)
+
     {:ok, %{watcher_pid: watcher_pid}}
   end
-
 
   def handle_info({:file_event, watcher_pid, {path, _events}}, %{watcher_pid: watcher_pid}=state) do
     GenServer.cast(Controller, {:file_changed, file_type(path), path})
@@ -34,6 +50,12 @@ defmodule Cortex.FileWatcher do
     {:noreply, state}
   end
 
+
+  ##########################################
+  # Private Helpers
+  ##########################################
+
+  # public only because it is tested
   def file_type(path) do
     is_elixir_file? =
       Regex.match?(~r/\/(\w|_)+\.exs?/, path)
