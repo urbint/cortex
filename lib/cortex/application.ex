@@ -3,7 +3,7 @@ defmodule Cortex.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  alias Cortex.{Controller, Reloader, TestRunner}
+  alias Cortex.{FileWatcher, Controller, Reloader, TestRunner}
 
   use Application
 
@@ -28,6 +28,7 @@ defmodule Cortex.Application do
     import Supervisor.Spec, warn: false
 
     children = [
+      worker(FileWatcher, []),
       worker(Reloader, []),
       worker(Controller, [])
     ]
