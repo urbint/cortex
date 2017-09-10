@@ -25,6 +25,8 @@ defmodule Cortex.Mixfile do
        "Ryan Schmukler",
        "William Carroll",
        "Justin DeMaris",
+       "Griffin Smith",
+       "Cameron Kingsbury",
        "Urbint"
      ],
      licenses: ["MIT"],
