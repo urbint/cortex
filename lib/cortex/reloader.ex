@@ -1,6 +1,8 @@
 defmodule Cortex.Reloader do
   use GenServer
 
+  require Logger
+
   @behaviour Cortex.Controller.Stage
 
   ##########################################
@@ -48,7 +50,7 @@ defmodule Cortex.Reloader do
   ##########################################
 
   def init(_) do
-    {:ok, %{}}
+    {:ok, %{paths_with_errors: MapSet.new()}}
   end
 
 
@@ -58,12 +60,30 @@ defmodule Cortex.Reloader do
 
     Code.compiler_options(ignore_module_conflict: true)
 
-    result =
+    {result, state} =
       try do
+        had_error? =
+          MapSet.size(state.paths_with_errors) > 0
+
         Code.load_file(path)
-        :ok
+
+        state =
+          %{state |
+            paths_with_errors: MapSet.delete(state.paths_with_errors, path)
+          }
+
+        if had_error? and MapSet.size(state.paths_with_errors) == 0 do
+          Logger.debug("All compile errors resolved.")
+        end
+
+        {:ok, state}
       rescue
         ex in [SyntaxError, CompileError, ArgumentError] ->
+          state =
+            %{state |
+              paths_with_errors: MapSet.put(state.paths_with_errors, path)
+            }
+
           %{__struct__: struct, line: line, file: file, description: desc} =
             ex
 
@@ -73,7 +93,7 @@ defmodule Cortex.Reloader do
           desc =
             "#{error_type} in #{file}:#{line}:\n\n\t#{desc}\n"
 
-          {:error, desc}
+          {{:error, desc}, state}
       end
 
     Code.compiler_options(restore_opts)
