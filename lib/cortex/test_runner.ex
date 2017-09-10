@@ -47,7 +47,6 @@ defmodule Cortex.TestRunner do
   end
 
 
-
   @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
   def run_tests_for_file(path, opts \\ []) do
     GenServer.call(__MODULE__, {:run_tests_for_file, path, opts}, :infinity)
@@ -59,7 +58,7 @@ defmodule Cortex.TestRunner do
 
   @spec run_all :: :ok | {:error, String.t}
   def run_all do
-    GenServer.call(__MODULE__, :run_all)
+    GenServer.call(__MODULE__, :run_all, :infinity)
   end
 
   def file_changed(relevant, path) when relevant in [:lib, :test] do
@@ -133,13 +132,22 @@ defmodule Cortex.TestRunner do
   end
 
   defp all_test_files do
-    config = Mix.Project.config
-    test_paths =
-      config[:test_paths] ||
-        if File.dir?("test"), do: ["test"], else: []
-    Enum.flat_map test_paths, fn p ->
-      p |> Path.join("**/*_test.exs") |> Path.wildcard
+    if Mix.Project.umbrella?() do
+      Mix.Project.apps_paths()
+      |> Stream.flat_map(fn {_app, path} ->
+        path
+        |> Path.join("test")
+        |> test_files_in_dir()
+      end)
+    else
+      test_files_in_dir("test")
     end
+  end
+
+  defp test_files_in_dir(dir) do
+    dir
+    |> Path.join("**/*_test.exs")
+    |> Path.wildcard
   end
 
   defp test_helper(path) do
