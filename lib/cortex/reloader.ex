@@ -27,6 +27,8 @@ defmodule Cortex.Reloader do
   # Controller Stage Callbacks
   ##########################################
 
+  def run_all, do: recompile()
+
   def file_changed(:lib, path), do: reload_or_recompile(path)
 
   def file_changed(:test, path) do
@@ -40,7 +42,6 @@ defmodule Cortex.Reloader do
   def file_changed(:unknown, _), do: :ok
 
   def cancel_on_error?, do: true
-
 
   ##########################################
   # GenServer Callbacks

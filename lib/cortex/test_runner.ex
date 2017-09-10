@@ -47,7 +47,6 @@ defmodule Cortex.TestRunner do
   end
 
 
-
   @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
   def run_tests_for_file(path, opts \\ []) do
     GenServer.call(__MODULE__, {:run_tests_for_file, path, opts}, :infinity)
@@ -56,6 +55,11 @@ defmodule Cortex.TestRunner do
   ##########################################
   # Controller Stage Callbacks
   ##########################################
+
+  @spec run_all :: :ok | {:error, String.t}
+  def run_all do
+    GenServer.call(__MODULE__, :run_all, :infinity)
+  end
 
   def file_changed(relevant, path) when relevant in [:lib, :test] do
     run_tests_for_file(path)
@@ -76,36 +80,74 @@ defmodule Cortex.TestRunner do
 
   def handle_call({:run_tests_for_file, path, _opts}, _from, state) do
     case test_file_for_path(path) do
-      :not_found ->
-        {:reply, :ok, state}
-
+      :not_found -> {:reply, :ok, state}
       test_path ->
-        files_to_load =
-          [test_helper(path), test_path]
-
-        compiler_errors =
-          files_to_load
-          |> Stream.map(&Reloader.reload_file/1)
-          |> Enum.reject(&(&1 == :ok))
-
-        with [] <- compiler_errors do
-          task =
-            Task.async(ExUnit, :run, [])
-
-          ExUnit.Server.cases_loaded()
-          Task.await(task, :infinity)
-
-          {:reply, :ok, state}
-        else
-          errors ->
-            compiler_error_descs =
-              errors
-              |> Stream.map(&elem(&1, 1))
-              |> Enum.join("\n")
-
-            {:reply, {:error, compiler_error_descs}, state}
+        case run_test_files([test_path]) do
+          :ok -> {:reply, :ok, state}
+          err = {:error, _} -> err
         end
     end
+  end
+
+  def handle_call(:run_all, _from, state) do
+    case run_test_files() do
+      :ok -> {:reply, :ok, state}
+      err = {:error, _} -> err
+    end
+  end
+
+  def run_test_files, do: run_test_files(all_test_files())
+  def run_test_files([]), do: :ok
+  def run_test_files(files) do
+    files
+    |> Enum.group_by(&test_helper/1)
+    |> Enum.map(fn {helper, files} -> run_test_files(helper, files) end)
+    |> Enum.find(:ok, fn
+      :ok         -> false
+      {:error, _} -> true
+    end)
+  end
+
+  def run_test_files(_test_helper, []), do: :ok
+  def run_test_files(test_helper, files) do
+    files_to_load = [test_helper | files]
+    compiler_errors =
+      files_to_load
+      |> Stream.map(&Reloader.reload_file/1)
+      |> Enum.reject(&(&1 == :ok))
+
+    with [] <- compiler_errors do
+      task = Task.async(ExUnit, :run, [])
+      ExUnit.Server.cases_loaded()
+      Task.await(task, :infinity)
+      :ok
+    else errors ->
+      compiler_error_descs =
+        errors
+        |> Stream.map(&elem(&1, 1))
+        |> Enum.join("\n")
+
+      {:error, compiler_error_descs}
+    end
+  end
+
+  defp all_test_files do
+    if Mix.Project.umbrella?() do
+      Mix.Project.apps_paths()
+      |> Stream.flat_map(fn {_app, path} ->
+        path
+        |> Path.join("test")
+        |> test_files_in_dir()
+      end)
+    else
+      test_files_in_dir("test")
+    end
+  end
+
+  defp test_files_in_dir(dir) do
+    dir
+    |> Path.join("**/*_test.exs")
+    |> Path.wildcard
   end
 
   defp test_helper(path) do

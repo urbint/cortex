@@ -39,4 +39,10 @@ defmodule Cortex do
   will re-run that file's tests.
 
   """
+
+  @doc """
+  Run all stages in the current Cortex pipeline on all files (ie, recompile all
+  files, run all tests, etc.). Returns immediately, then runs asynchronously
+  """
+  defdelegate all, to: Cortex.Controller, as: :run_all
 end
