@@ -37,11 +37,13 @@ defmodule Cortex.Controller do
 
   def handle_cast({:file_changed, type, path}, %{pipeline: pipeline} = state) do
     run_pipeline(pipeline, {:file, type, path})
+
     {:noreply, state}
   end
 
   def handle_cast(:run_all, %{pipeline: pipeline} = state) do
     run_pipeline(pipeline, :all)
+
     {:noreply, state}
   end
 
@@ -90,8 +92,12 @@ defmodule Cortex.Controller do
   @spec run_pipeline([module], command) :: :ok | :error
   def run_pipeline([], _command), do: :ok
   def run_pipeline([stage | rest], command) do
-    {results, continue?} = call_stage(stage, &run_stage_command(&1, command))
-    results |> List.wrap |> Enum.each(&log_stage/1)
+    {results, continue?} =
+      call_stage(stage, &run_stage_command(&1, command))
+
+    results
+    |> List.wrap
+    |> Enum.each(&log_stage/1)
 
     if continue? do
       run_pipeline(rest, command)
@@ -104,11 +110,18 @@ defmodule Cortex.Controller do
   defp run_stage_command(stage, {:file, type, path}) do
     stage.file_changed(type, path)
   end
+
   defp run_stage_command(stage, :all), do: stage.run_all
 
+
+  @spec call_stage(stage :: module | [module], fun) :: {:ok | {:error, any}, boolean}
   defp call_stage(stage, cb) when is_atom(stage) do
-    result = cb.(stage)
-    continue? = !stage.cancel_on_error? or !match?({:error, _}, result)
+    result =
+      cb.(stage)
+
+    continue? =
+      !stage.cancel_on_error? or
+      !match?({:error, _}, result)
 
     {result, continue?}
   end

@@ -33,16 +33,19 @@ defmodule Cortex.FileWatcher do
 
   def handle_info({:file_event, watcher_pid, {path, _events}}, %{watcher_pid: watcher_pid}=state) do
     GenServer.cast(Controller, {:file_changed, file_type(path), path})
+
     {:noreply, state}
   end
 
   def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid}=state) do
     Logger.info "File watcher stopped."
+
     {:noreply, state}
   end
 
   def handle_info(data, state) do
     Logger.info "Get unexcepted message #{inspect data}, ignore..."
+
     {:noreply, state}
   end
 

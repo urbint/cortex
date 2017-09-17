@@ -122,18 +122,26 @@ defmodule Cortex.TestRunner do
     end)
   end
 
+
+  @spec run_test_files(Path.t, [Path.t]) :: :ok | {:error, [any]}
   def run_test_files(_test_helper, []), do: :ok
   def run_test_files(test_helper, files) do
-    files_to_load = [test_helper | files]
+    files_to_load =
+      [test_helper | files]
+
     compiler_errors =
       files_to_load
       |> Stream.map(&Reloader.reload_file/1)
       |> Enum.reject(&(&1 == :ok))
 
     with [] <- compiler_errors do
-      task = Task.async(ExUnit, :run, [])
+      task =
+        Task.async(ExUnit, :run, [])
+
       ExUnit.Server.cases_loaded()
+
       Task.await(task, :infinity)
+
       :ok
     else errors ->
       compiler_error_descs =
