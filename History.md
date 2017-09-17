@@ -1,3 +1,11 @@
+0.3.1 (2017-09-17)
+==================
+
+  * feat(file_watcher): adds dependency directories to the file watcher
+  * fix(reloader): rescue catches more errors, displays better compile-fail messages
+  * fix(test_runner): skip re-running tests for dependencies
+  * fix(test_runner): fix bad return value error
+
 0.3.0 / 2017-09-10
 ==================
 
