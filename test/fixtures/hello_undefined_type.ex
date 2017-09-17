@@ -1,6 +1,6 @@
 defmodule Hello do
   @moduledoc """
-  Fixture that compiles just fine.
+  Fixture that fails because the type is undefined.
 
   """
 

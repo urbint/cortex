@@ -62,38 +62,41 @@ defmodule Cortex.Reloader do
 
     {result, state} =
       try do
-        had_error? =
-          MapSet.size(state.paths_with_errors) > 0
-
         Code.load_file(path)
 
         state =
-          %{state |
-            paths_with_errors: MapSet.delete(state.paths_with_errors, path)
-          }
+          if MapSet.member?(state.paths_with_errors, path) do
+            Logger.warn("Compiler errors resolved for path: #{path}")
 
-        if had_error? and MapSet.size(state.paths_with_errors) == 0 do
-          Logger.debug("All compile errors resolved.")
-        end
+            %{state |
+              paths_with_errors: MapSet.delete(state.paths_with_errors, path)
+            }
+          else
+            state
+          end
 
         {:ok, state}
       rescue
-        ex in [SyntaxError, CompileError, ArgumentError] ->
+        ex ->
           state =
             %{state |
               paths_with_errors: MapSet.put(state.paths_with_errors, path)
             }
 
-          %{__struct__: struct, line: line, file: file, description: desc} =
-            ex
+          error_module =
+            ex.__struct__
+            |> Module.split() |> Enum.reverse() |> hd()
 
-          error_type =
-            Module.split(struct) |> Enum.reverse() |> hd()
+          error_message =
+            case ex do
+              %{line: line, file: file, description: desc} ->
+                "#{error_module} in #{file}:#{line}:\n\n\t#{desc}\n"
 
-          desc =
-            "#{error_type} in #{file}:#{line}:\n\n\t#{desc}\n"
+              %{message: message} ->
+                "#{error_module}:\n\n\t#{message}\n"
+            end
 
-          {{:error, desc}, state}
+          {{:error, error_message}, state}
       end
 
     Code.compiler_options(restore_opts)

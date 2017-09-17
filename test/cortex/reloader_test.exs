@@ -33,20 +33,34 @@ defmodule Cortex.ReloaderTest do
       assert Hello.hi() == "goodbye"
     end
 
-    test "exposes a compilation error", %{state: state} do
-      path = fixture_for("hello_compile_fail.ex")
+    test "exposes misc errors", %{state: state} do
+      error_file_paths =
+        [
+          "hello_undefined_type.ex",
+          "hello_bad_string.ex",
+          "hello_bad_comma.ex",
+          "hello_does_not_exist.ex",
+        ]
 
-      {:reply, {:error, desc}, state} =
+      for path <- error_file_paths do
+        assert_errors_found_for_fixture_path(path, state)
+      end
+    end
+
+    defp assert_errors_found_for_fixture_path(path, state) do
+      path =
+        fixture_for(path)
+
+      {:reply, {:error, error_message}, state} =
         Reloader.handle_call({:reload_file, path}, nil, state)
 
-
-      assert Regex.match?(~r/spec for undefined function/, desc)
+      assert error_message =~ ~r/(CompileError|LoadError|TokenMissingError|SyntaxError)/
 
       errors_set =
         MapSet.new()
         |> MapSet.put(path)
 
-      assert %{paths_with_errors: errors_set} = state
+      assert %{paths_with_errors: ^errors_set} = state
     end
   end
 end
