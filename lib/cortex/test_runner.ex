@@ -78,23 +78,33 @@ defmodule Cortex.TestRunner do
     {:ok, %{}}
   end
 
+
   def handle_call({:run_tests_for_file, path, _opts}, _from, state) do
     case test_file_for_path(path) do
-      :not_found -> {:reply, :ok, state}
+      :not_found ->
+        {:reply, :ok, state}
+
       test_path ->
         case run_test_files([test_path]) do
-          :ok -> {:reply, :ok, state}
-          err = {:error, _} -> err
+          :ok ->
+            {:reply, :ok, state}
+
+          err = {:error, _} ->
+            {:reply, err, state}
         end
     end
   end
 
   def handle_call(:run_all, _from, state) do
     case run_test_files() do
-      :ok -> {:reply, :ok, state}
-      err = {:error, _} -> err
+      :ok ->
+        {:reply, :ok, state}
+
+      err = {:error, _} ->
+        {:reply, err, state}
     end
   end
+
 
   def run_test_files, do: run_test_files(all_test_files())
   def run_test_files([]), do: :ok
