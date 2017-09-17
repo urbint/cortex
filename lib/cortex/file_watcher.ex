@@ -23,12 +23,8 @@ defmodule Cortex.FileWatcher do
   ##########################################
 
   def init(_) do
-    dirs =
-      @watched_dirs
-      |> Enum.filter(&File.dir?/1)
-
     {:ok, watcher_pid} =
-      FileSystem.start_link(dirs: dirs)
+      FileSystem.start_link(dirs: watched_dirs())
 
     FileSystem.subscribe(watcher_pid)
 
@@ -56,6 +52,7 @@ defmodule Cortex.FileWatcher do
   ##########################################
 
   # public only because it is tested
+  @spec file_type(Path.t) :: :lib | :test | :unknown
   def file_type(path) do
     is_elixir_file? =
       Regex.match?(~r/\/(\w|_)+\.exs?/, path)
@@ -70,5 +67,21 @@ defmodule Cortex.FileWatcher do
       true ->
         :unknown
     end
+  end
+
+
+  # Returns a list of all directories to monitor for file changes.
+  # Includes dependencies.
+  @spec watched_dirs() :: [Path.t]
+  defp watched_dirs() do
+    Mix.Project.deps_paths()
+    |> Stream.flat_map(fn {_dep_name, dir} ->
+      @watched_dirs
+      |> Enum.map(fn watched_dir ->
+        Path.join(dir, watched_dir)
+      end)
+    end)
+    |> Stream.concat(@watched_dirs)
+    |> Enum.filter(&File.dir?/1)
   end
 end
