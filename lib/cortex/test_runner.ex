@@ -62,7 +62,11 @@ defmodule Cortex.TestRunner do
   end
 
   def file_changed(relevant, path) when relevant in [:lib, :test] do
-    run_tests_for_file(path)
+    if not dep_path?(path) do
+      run_tests_for_file(path)
+    else
+      :ok
+    end
   end
   def file_changed(_, _), do: :ok
 
@@ -171,6 +175,26 @@ defmodule Cortex.TestRunner do
       "apps/#{app_name}/test/test_helper.exs"
     else
       "test/test_helper.exs"
+    end
+  end
+
+
+  # Returns true if the path is a dependency of the current application
+  @spec dep_path?(Path.t) :: boolean
+  defp dep_path?(path) do
+    cond do
+      path =~ ~r/\/deps\// ->
+        true
+
+      Mix.Project.umbrella? ->
+        not(path =~ ~r/\/apps\//)
+
+      true ->
+        app_root =
+          Mix.Project.app_path()
+          |> String.replace(~r/_build.*/, "")
+
+        not(path |> String.contains?(app_root))
     end
   end
 end
