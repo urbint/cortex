@@ -7,6 +7,8 @@ defmodule Cortex.TestRunner do
 
   @behaviour Cortex.Controller.Stage
 
+
+
   ##########################################
   # Public API
   ##########################################
@@ -47,49 +49,60 @@ defmodule Cortex.TestRunner do
   end
 
 
-  @spec run_tests_for_file(Path.t, keyword) :: :ok | {:error, String.t}
-  def run_tests_for_file(path, opts \\ []) do
-    GenServer.call(__MODULE__, {:run_tests_for_file, path, opts}, :infinity)
+  @spec run_tests_for_file(Path.t, Cortex.Controller.focus, keyword) :: :ok | {:error, String.t}
+  def run_tests_for_file(path, focus, opts \\ []) do
+    GenServer.call(__MODULE__, {:run_tests_for_file, path, focus, opts}, :infinity)
   end
+
+
 
   ##########################################
   # Controller Stage Callbacks
   ##########################################
 
-  @spec run_all :: :ok | {:error, String.t}
+  @impl Cortex.Controller.Stage
   def run_all do
     GenServer.call(__MODULE__, :run_all, :infinity)
   end
 
-  def file_changed(relevant, path) when relevant in [:lib, :test] do
+
+  @impl Cortex.Controller.Stage
+  def file_changed(relevant, path, focus) when relevant in [:lib, :test] do
     if not dep_path?(path) do
-      run_tests_for_file(path)
+      run_tests_for_file(path, focus)
     else
       :ok
     end
   end
-  def file_changed(_, _), do: :ok
 
+  @impl Cortex.Controller.Stage
+  def file_changed(_, _, _), do: :ok
+
+
+  @impl Cortex.Controller.Stage
   def cancel_on_error?, do: false
+
 
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
+  @impl GenServer
   def init(_) do
     Application.ensure_started(:ex_unit)
     {:ok, %{}}
   end
 
 
-  def handle_call({:run_tests_for_file, path, _opts}, _from, state) do
+  @impl GenServer
+  def handle_call({:run_tests_for_file, path, focus, _opts}, _from, state) do
     case test_file_for_path(path) do
       :not_found ->
         {:reply, :ok, state}
 
       test_path ->
-        case run_test_files([test_path]) do
+        case run_test_files([test_path], focus) do
           :ok ->
             {:reply, :ok, state}
 
@@ -99,6 +112,7 @@ defmodule Cortex.TestRunner do
     end
   end
 
+  @impl GenServer
   def handle_call(:run_all, _from, state) do
     case run_test_files() do
       :ok ->
@@ -110,12 +124,24 @@ defmodule Cortex.TestRunner do
   end
 
 
-  def run_test_files, do: run_test_files(all_test_files())
-  def run_test_files([]), do: :ok
-  def run_test_files(files) do
+
+  ################################################################################
+  # Private helpers
+  ################################################################################
+
+  defp apply_focus(nil), do: :ok
+  defp apply_focus([]), do: :ok
+  defp apply_focus(focus) do
+    ExUnit.configure(exclude: [:test], include: focus)
+  end
+
+
+  defp run_test_files, do: run_test_files(all_test_files(), nil)
+  defp run_test_files([], _), do: :ok
+  defp run_test_files(files, focus) do
     files
     |> Enum.group_by(&test_helper/1)
-    |> Enum.map(fn {helper, files} -> run_test_files(helper, files) end)
+    |> Enum.map(fn {helper, files} -> run_test_files(helper, files, focus) end)
     |> Enum.find(:ok, fn
       :ok         -> false
       {:error, _} -> true
@@ -123,9 +149,9 @@ defmodule Cortex.TestRunner do
   end
 
 
-  @spec run_test_files(Path.t, [Path.t]) :: :ok | {:error, [any]}
-  def run_test_files(_test_helper, []), do: :ok
-  def run_test_files(test_helper, files) do
+  @spec run_test_files(Path.t, [Path.t], Cortex.Controller.focus) :: :ok | {:error, [any]}
+  defp run_test_files(_test_helper, [], _), do: :ok
+  defp run_test_files(test_helper, files, focus) do
     files_to_load =
       [test_helper | files]
 
@@ -135,6 +161,7 @@ defmodule Cortex.TestRunner do
       |> Enum.reject(&(&1 == :ok))
 
     with [] <- compiler_errors do
+      apply_focus(focus)
       task =
         Task.async(ExUnit, :run, [])
 

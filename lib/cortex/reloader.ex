@@ -5,6 +5,8 @@ defmodule Cortex.Reloader do
 
   @behaviour Cortex.Controller.Stage
 
+
+
   ##########################################
   # Public API
   ##########################################
@@ -25,15 +27,20 @@ defmodule Cortex.Reloader do
     GenServer.call(__MODULE__, {:recompile}, :infinity)
   end
 
+
+
   ##########################################
   # Controller Stage Callbacks
   ##########################################
 
+  @impl Cortex.Controller.Stage
   def run_all, do: recompile()
 
-  def file_changed(:lib, path), do: reload_or_recompile(path)
+  @impl Cortex.Controller.Stage
+  def file_changed(:lib, path, _focus), do: reload_or_recompile(path)
 
-  def file_changed(:test, path) do
+  @impl Cortex.Controller.Stage
+  def file_changed(:test, path, _focus) do
     if Path.extname(path) == ".ex" do
       reload_or_recompile(path)
     else
@@ -41,19 +48,25 @@ defmodule Cortex.Reloader do
     end
   end
 
-  def file_changed(:unknown, _), do: :ok
+  @impl Cortex.Controller.Stage
+  def file_changed(:unknown, _, _), do: :ok
 
+  @impl Cortex.Controller.Stage
   def cancel_on_error?, do: true
+
+
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
+  @impl GenServer
   def init(_) do
     {:ok, %{paths_with_errors: MapSet.new()}}
   end
 
 
+  @impl GenServer
   def handle_call({:reload_file, path}, _from, state) do
     restore_opts =
       Code.compiler_options()
@@ -104,6 +117,7 @@ defmodule Cortex.Reloader do
     {:reply, result, state}
   end
 
+  @impl GenServer
   def handle_call({:recompile}, _from, state) do
     IEx.Helpers.recompile()
     {:reply, :ok, state}

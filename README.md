@@ -55,6 +55,18 @@ module:
 - `Cortex.all` - run all stages (currently reload and test runner) on all files
   in the project
 
+- `Cortex.focus` - filter test runs to only tests matching the given pattern.
+  Supports:
+  - a regular expression, which will filter to tests whose full test name
+    matches that regular expression
+  - a string, which will compile as a regular expression and behave like the
+    above regular expression
+  - an integer, which will filter by line number for tests
+  - a keyword, which will pass through to the `include` option of
+    `ExUnit.configure/1` unchanged
+
+- `Cortex.unfocus` - clear the currently configured focus
+
 
 ### Test Runner
 
@@ -116,7 +128,7 @@ iex -S mix phoenix.server
  - [ ] [Dialyzer](https://github.com/jeremyjh/dialyxir/) runner
  - [ ] [ExDash](https://github.com/urbint/ex_dash) runner
  - [ ] Custom mix task runner
- - [ ] Cortex 'focus' mode
+ - [x] Cortex 'focus' mode
  - [ ] Broader OTP reload support
  - [ ] Autofetch dependencies when `mix.exs` changes `deps`
 
