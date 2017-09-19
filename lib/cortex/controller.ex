@@ -7,24 +7,57 @@ defmodule Cortex.Controller do
   alias Cortex.{Reloader,TestRunner}
 
 
+
+  ##########################################
+  # Types
+  ##########################################
+
+  @type focus :: keyword | nil
+
+
+
   ##########################################
   # Public API
   ##########################################
+
 
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+
   def pipeline(timeout \\ 5000) do
     GenServer.call(__MODULE__, :get_pipeline, timeout)
   end
 
+
   def run_all, do: GenServer.cast(__MODULE__, :run_all)
+
+
+  @doc """
+  Update the current focus of Cortex. Arguments are the same tag filters that would be passed to
+  ExUnit.
+
+  """
+  @spec set_focus(focus) :: :ok
+  def set_focus(focus),
+    do: GenServer.call(__MODULE__, {:set_focus, focus})
+
+
+  @doc """
+  Clear the Cortex focus.
+
+  """
+  @spec clear_focus() :: :ok
+  def clear_focus(), do: set_focus(nil)
+
+
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
+  @impl GenServer
   def init(_) do
     pipeline =
       case Mix.env do
@@ -32,27 +65,39 @@ defmodule Cortex.Controller do
         :test -> [Reloader, TestRunner]
       end
 
-    {:ok, %{pipeline: pipeline}}
+    {:ok, %{pipeline: pipeline, focus: []}}
   end
 
-  def handle_cast({:file_changed, type, path}, %{pipeline: pipeline} = state) do
-    run_pipeline(pipeline, {:file, type, path})
+
+  @impl GenServer
+  def handle_cast({:file_changed, type, path}, %{pipeline: pipeline, focus: focus} = state) do
+    run_pipeline(pipeline, {:file, type, path}, focus)
 
     {:noreply, state}
   end
 
-  def handle_cast(:run_all, %{pipeline: pipeline} = state) do
-    run_pipeline(pipeline, :all)
+  @impl GenServer
+  def handle_cast(:run_all, %{pipeline: pipeline, focus: focus} = state) do
+    run_pipeline(pipeline, :all, focus)
 
     {:noreply, state}
   end
 
-  def handle_call(:get_pipeline, %{pipeline: pipeline} = state) do
+
+  @impl GenServer
+  def handle_call(:get_pipeline, _from, %{pipeline: pipeline} = state) do
     {:reply, pipeline, state}
   end
 
+  @impl GenServer
+  def handle_call({:set_focus, focus}, _from, state) do
+    {:reply, :ok, %{state | focus: focus}}
+  end
+
+
+
   ##########################################
-  # Stage Module
+  # Stage Behaviour
   ##########################################
 
   defmodule Stage do
@@ -68,7 +113,7 @@ defmodule Cortex.Controller do
     and the second is the path of the file.
 
     """
-    @callback file_changed(atom, Path.t) :: result
+    @callback file_changed(atom, Path.t, Cortex.Controller.focus) :: result
 
     @doc """
     Run this stage on all possible files
@@ -79,7 +124,7 @@ defmodule Cortex.Controller do
     Returns a boolean for whether or not an error should cancel the rest of the pipeline.
 
     """
-    @callback cancel_on_error? :: boolean
+    @callback cancel_on_error?() :: boolean
   end
 
 
@@ -89,29 +134,29 @@ defmodule Cortex.Controller do
 
   @type command :: {:file, atom, Path.t} | :all
 
-  @spec run_pipeline([module], command) :: :ok | :error
-  def run_pipeline([], _command), do: :ok
-  def run_pipeline([stage | rest], command) do
+  @spec run_pipeline([module], command, focus) :: :ok | :error
+  def run_pipeline([], _command, _focus), do: :ok
+  def run_pipeline([stage | rest], command, focus) do
     {results, continue?} =
-      call_stage(stage, &run_stage_command(&1, command))
+      call_stage(stage, &run_stage_command(&1, command, focus))
 
     results
     |> List.wrap
     |> Enum.each(&log_stage/1)
 
     if continue? do
-      run_pipeline(rest, command)
+      run_pipeline(rest, command, focus)
     else
       :error
     end
   end
 
-  @spec run_stage_command(module, command) :: Stage.result
-  defp run_stage_command(stage, {:file, type, path}) do
-    stage.file_changed(type, path)
+  @spec run_stage_command(module, command, focus) :: Stage.result
+  defp run_stage_command(stage, {:file, type, path}, focus) do
+    stage.file_changed(type, path, focus)
   end
 
-  defp run_stage_command(stage, :all), do: stage.run_all
+  defp run_stage_command(stage, :all, _), do: stage.run_all
 
 
   @spec call_stage(stage :: module | [module], fun) :: {:ok | {:error, any}, boolean}

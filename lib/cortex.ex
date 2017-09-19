@@ -42,7 +42,41 @@ defmodule Cortex do
 
   @doc """
   Run all stages in the current Cortex pipeline on all files (ie, recompile all
-  files, run all tests, etc.). Returns immediately, then runs asynchronously
+  files, run all tests, etc.).
+
   """
   defdelegate all, to: Cortex.Controller, as: :run_all
+
+
+  @doc """
+  Set the current focus for all Cortex stages to which it applies.
+
+  Allowed arguments are:
+
+  - a `Regex`, which will filter to tests whose full test name matches that regular expression
+  - a string, which will compile as a regular expression and behave like the above regular
+    expression
+  - an integer, which will filter by line number for tests
+  - a keyword, which will pass through to `ExUnit.configure/1` unchanged
+
+  """
+  def focus(%Regex{} = re),
+    do: Cortex.Controller.set_focus(test: re)
+
+  def focus(string) when is_binary(string),
+    do: string |> Regex.compile() |> focus()
+
+  def focus(integer) when is_integer(integer),
+    do: Cortex.Controller.set_focus(line: integer)
+
+  def focus(focus),
+    do: Cortex.Controller.set_focus(focus)
+
+
+  @doc """
+  Clear the focus for all Cortex stages.
+
+  """
+  defdelegate unfocus, to: Cortex.Controller, as: :clear_focus
+
 end
