@@ -1,4 +1,5 @@
 # <img src='https://storage.googleapis.com/ub-public/cortex_logo.png' height='60'>
+[![CircleCI](https://circleci.com/gh/urbint/cortex/tree/master.svg?style=svg)](https://circleci.com/gh/urbint/cortex/tree/master)
 
 Cortex is the intelligent coding assistant for Elixir.
 

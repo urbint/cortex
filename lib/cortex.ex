@@ -64,7 +64,7 @@ defmodule Cortex do
     do: Cortex.Controller.set_focus(test: re)
 
   def focus(string) when is_binary(string),
-    do: string |> Regex.compile() |> focus()
+    do: string |> Regex.compile!() |> focus()
 
   def focus(integer) when is_integer(integer),
     do: Cortex.Controller.set_focus(line: integer)

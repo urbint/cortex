@@ -24,7 +24,7 @@ defmodule Cortex.Application do
     end
   end
 
-  defp children() do
+  defp children do
     import Supervisor.Spec, warn: false
 
     children = [

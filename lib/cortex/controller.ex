@@ -4,7 +4,7 @@ defmodule Cortex.Controller do
 
   require Logger
 
-  alias Cortex.{Reloader,TestRunner}
+  alias Cortex.{Reloader, TestRunner}
 
 
 
@@ -21,7 +21,7 @@ defmodule Cortex.Controller do
   ##########################################
 
 
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -49,7 +49,7 @@ defmodule Cortex.Controller do
 
   """
   @spec clear_focus() :: :ok
-  def clear_focus(), do: set_focus(nil)
+  def clear_focus, do: set_focus(nil)
 
 
 
@@ -101,6 +101,11 @@ defmodule Cortex.Controller do
   ##########################################
 
   defmodule Stage do
+    @moduledoc """
+    Behaviour for stages that run when files change.
+
+    """
+
     @typedoc """
     The type of the results to all stage commands
     """
