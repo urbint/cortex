@@ -131,9 +131,12 @@ defmodule Cortex.TestRunner do
 
   defp apply_focus(nil), do: :ok
   defp apply_focus([]), do: :ok
-  defp apply_focus(focus) do
-    ExUnit.configure(exclude: [:test], include: focus)
-  end
+  defp apply_focus(focus),
+    do: ExUnit.configure(exclude: [:test], include: focus)
+
+
+  defp clear_focus(),
+    do: ExUnit.configure(exclude: [], include: [])
 
 
   defp run_test_files, do: run_test_files(all_test_files(), nil)
@@ -152,6 +155,10 @@ defmodule Cortex.TestRunner do
   @spec run_test_files(Path.t, [Path.t], Cortex.Controller.focus) :: :ok | {:error, [any]}
   defp run_test_files(_test_helper, [], _), do: :ok
   defp run_test_files(test_helper, files, focus) do
+    # Need to do this before loading test_helper so that user test configuration overrides it if
+    # present
+    if focus == nil, do: clear_focus()
+
     files_to_load =
       [test_helper | files]
 
