@@ -1,4 +1,9 @@
 
+0.4.2 / 2017-09-20
+==================
+
+  * fix(): Clear the focus before loading test helper if it's not set
+
 0.4.0 / 2017-09-19
 ==================
 
