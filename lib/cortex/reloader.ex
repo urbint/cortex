@@ -1,4 +1,9 @@
 defmodule Cortex.Reloader do
+  @moduledoc """
+  Controller stage for reloading changed code
+
+  """
+
   use GenServer
 
   require Logger
@@ -12,7 +17,7 @@ defmodule Cortex.Reloader do
   ##########################################
 
   @spec start_link :: GenServer.on_start
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -23,7 +28,7 @@ defmodule Cortex.Reloader do
   end
 
   @spec recompile() :: :ok
-  def recompile() do
+  def recompile do
     GenServer.call(__MODULE__, {:recompile}, :infinity)
   end
 
