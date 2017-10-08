@@ -8,6 +8,7 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
+  @debounce_timeout 100
 
   ##########################################
   # Public API
@@ -28,14 +29,25 @@ defmodule Cortex.FileWatcher do
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid}}
+    {:ok, %{watcher_pid: watcher_pid, debounce_timers: %{}}}
   end
 
   def handle_info({:file_event, watcher_pid, {path, _events}},
-                  %{watcher_pid: watcher_pid} = state) do
+                  %{watcher_pid: watcher_pid, debounce_timers: debounce_timers} = state) do
+    with {:ok, old_timer} <- Map.fetch(debounce_timers, path) do
+      Process.cancel_timer(old_timer)
+    end
+
+    timer =
+      Process.send_after(self(), {:debounce_timer_complete, path}, @debounce_timeout)
+
+    {:noreply, put_in(state[:debounce_timers][path], timer)}
+  end
+
+  def handle_info({:debounce_timer_complete, path}, %{debounce_timers: debounce_timers} = state) do
     GenServer.cast(Controller, {:file_changed, file_type(path), path})
 
-    {:noreply, state}
+    {:noreply, %{state | debounce_timers: Map.delete(debounce_timers, path)}}
   end
 
   def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid} = state) do
