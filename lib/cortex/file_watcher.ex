@@ -8,7 +8,7 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
-  @debounce_timeout 100
+  @throttle_timer 100
 
   ##########################################
   # Public API
@@ -29,25 +29,21 @@ defmodule Cortex.FileWatcher do
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid, debounce_timers: %{}}}
+    {:ok, %{watcher_pid: watcher_pid, throttling: false}}
   end
 
   def handle_info({:file_event, watcher_pid, {path, _events}},
-                  %{watcher_pid: watcher_pid, debounce_timers: debounce_timers} = state) do
-    with {:ok, old_timer} <- Map.fetch(debounce_timers, path) do
-      Process.cancel_timer(old_timer)
+                  %{watcher_pid: watcher_pid, throttling: throttling} = state) do
+    unless throttling do
+      GenServer.cast(Controller, {:file_changed, file_type(path), path})
+      Process.send_after(self(), :throttle_timer_complete, @throttle_timer)
     end
 
-    timer =
-      Process.send_after(self(), {:debounce_timer_complete, path}, @debounce_timeout)
-
-    {:noreply, put_in(state[:debounce_timers][path], timer)}
+    {:noreply, %{state | throttling: true}}
   end
 
-  def handle_info({:debounce_timer_complete, path}, %{debounce_timers: debounce_timers} = state) do
-    GenServer.cast(Controller, {:file_changed, file_type(path), path})
-
-    {:noreply, %{state | debounce_timers: Map.delete(debounce_timers, path)}}
+  def handle_info(:throttle_timer_complete, state) do
+    {:noreply, %{state | throttling: false}}
   end
 
   def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid} = state) do
