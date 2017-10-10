@@ -112,6 +112,9 @@ defmodule Cortex.Reloader do
 
               %{message: message} ->
                 "#{error_module}:\n\n\t#{message}\n"
+
+              %{arity: arity, function: func, module: mod} ->
+                "#{error_module}:\n\n\t#{mod}.#{func}/#{arity}\n"
             end
 
           {{:error, error_message}, state}
