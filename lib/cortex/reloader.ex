@@ -115,6 +115,9 @@ defmodule Cortex.Reloader do
 
               %{arity: arity, function: func, module: mod} ->
                 "#{error_module}:\n\n\t#{mod}.#{func}/#{arity}\n"
+
+              %{key: key, term: term} ->
+                "#{error_module}:\n\n\tterm: #{inspect term} has no key: #{key}"
             end
 
           {{:error, error_message}, state}
