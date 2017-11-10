@@ -135,7 +135,7 @@ defmodule Cortex.TestRunner do
     do: ExUnit.configure(exclude: [:test], include: focus)
 
 
-  defp clear_focus(),
+  defp clear_focus,
     do: ExUnit.configure(exclude: [], include: [])
 
 
