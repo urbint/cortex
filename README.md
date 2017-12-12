@@ -128,6 +128,7 @@ iex -S mix phoenix.server
  - [ ] [Credo](https://github.com/rrrene/credo) runner
  - [ ] [Dialyzer](https://github.com/jeremyjh/dialyxir/) runner
  - [ ] [ExDash](https://github.com/urbint/ex_dash) runner
+ - [ ] Auto-formatting runner
  - [ ] Custom mix task runner
  - [x] Cortex 'focus' mode
  - [ ] Broader OTP reload support
