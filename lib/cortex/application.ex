@@ -3,7 +3,7 @@ defmodule Cortex.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  alias Cortex.{FileWatcher, Controller, Reloader, TestRunner}
+  alias Cortex.{FileWatcher, Controller, Reloader, TestRunner, CredoRunner}
 
   use Application
 
@@ -30,7 +30,8 @@ defmodule Cortex.Application do
     children = [
       worker(FileWatcher, []),
       worker(Reloader, []),
-      worker(Controller, [])
+      worker(Controller, []),
+      worker(CredoRunner, [])
     ]
 
     env_specific_children =

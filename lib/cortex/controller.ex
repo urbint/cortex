@@ -4,7 +4,7 @@ defmodule Cortex.Controller do
 
   require Logger
 
-  alias Cortex.{Reloader,TestRunner}
+  alias Cortex.{Reloader,TestRunner,CredoRunner}
 
 
   ##########################################
@@ -31,6 +31,7 @@ defmodule Cortex.Controller do
         :dev  -> [Reloader]
         :test -> [Reloader, TestRunner]
       end
+      |> Enum.concat([CredoRunner])
 
     {:ok, %{pipeline: pipeline}}
   end
