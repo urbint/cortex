@@ -1,7 +1,11 @@
 defmodule Cortex.Reloader do
+  @moduledoc false
+
   use GenServer
 
   require Logger
+
+  alias IEx.Helpers, as: IExHelpers
 
   @behaviour Cortex.Controller.Stage
 
@@ -10,7 +14,7 @@ defmodule Cortex.Reloader do
   ##########################################
 
   @spec start_link :: GenServer.on_start
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -20,8 +24,8 @@ defmodule Cortex.Reloader do
     GenServer.call(__MODULE__, {:reload_file, path}, :infinity)
   end
 
-  @spec recompile() :: :ok
-  def recompile() do
+  @spec recompile :: :ok
+  def recompile do
     GenServer.call(__MODULE__, {:recompile}, :infinity)
   end
 
@@ -105,7 +109,7 @@ defmodule Cortex.Reloader do
   end
 
   def handle_call({:recompile}, _from, state) do
-    IEx.Helpers.recompile()
+    IExHelpers.recompile()
     {:reply, :ok, state}
   end
 

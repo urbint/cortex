@@ -4,14 +4,15 @@ defmodule Cortex.Controller do
 
   require Logger
 
-  alias Cortex.{Reloader,TestRunner,CredoRunner}
+  alias Cortex.{Reloader, TestRunner, CredoRunner}
+
 
 
   ##########################################
   # Public API
   ##########################################
 
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -57,6 +58,8 @@ defmodule Cortex.Controller do
   ##########################################
 
   defmodule Stage do
+    @moduledoc false
+
     @typedoc """
     The type of the results to all stage commands
     """

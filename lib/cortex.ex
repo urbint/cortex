@@ -40,6 +40,7 @@ defmodule Cortex do
 
   """
 
+
   @doc """
   Run all stages in the current Cortex pipeline on all files (ie, recompile all
   files, run all tests, etc.). Returns immediately, then runs asynchronously

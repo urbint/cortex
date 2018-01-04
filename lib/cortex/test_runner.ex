@@ -2,8 +2,9 @@ defmodule Cortex.TestRunner do
   @moduledoc false
   use GenServer
 
-
   alias Cortex.Reloader
+  alias ExUnit.Server, as: ExUnitServer
+  alias Mix.Project, as: MixProject
 
   @behaviour Cortex.Controller.Stage
 
@@ -12,7 +13,7 @@ defmodule Cortex.TestRunner do
   ##########################################
 
   @spec start_link :: GenServer.on_start
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -138,7 +139,7 @@ defmodule Cortex.TestRunner do
       task =
         Task.async(ExUnit, :run, [])
 
-      ExUnit.Server.cases_loaded()
+      ExUnitServer.cases_loaded()
 
       Task.await(task, :infinity)
 
@@ -154,8 +155,8 @@ defmodule Cortex.TestRunner do
   end
 
   defp all_test_files do
-    if Mix.Project.umbrella?() do
-      Mix.Project.apps_paths()
+    if MixProject.umbrella?() do
+      MixProject.apps_paths()
       |> Stream.flat_map(fn {_app, path} ->
         path
         |> Path.join("test")
@@ -173,7 +174,7 @@ defmodule Cortex.TestRunner do
   end
 
   defp test_helper(path) do
-    if Mix.Project.umbrella? do
+    if MixProject.umbrella? do
       app_name =
         path
         |> Path.relative_to_cwd
@@ -194,12 +195,12 @@ defmodule Cortex.TestRunner do
       path =~ ~r/\/deps\// ->
         true
 
-      Mix.Project.umbrella? ->
+      MixProject.umbrella? ->
         not(path =~ ~r/\/apps\//)
 
       true ->
         app_root =
-          Mix.Project.app_path()
+          MixProject.app_path()
           |> String.replace(~r/_build.*/, "")
 
         not(path |> String.contains?(app_root))

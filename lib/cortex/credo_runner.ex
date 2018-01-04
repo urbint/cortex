@@ -2,9 +2,10 @@ defmodule Cortex.CredoRunner do
   @moduledoc false
   use GenServer
 
+  alias Credo.CLI, as: CredoCLI
+
 
   @behaviour Cortex.Controller.Stage
-
 
 
   ##########################################
@@ -12,7 +13,7 @@ defmodule Cortex.CredoRunner do
   ##########################################
 
   @spec start_link :: GenServer.on_start
-  def start_link() do
+  def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -52,13 +53,13 @@ defmodule Cortex.CredoRunner do
 
 
   def handle_call({:run_for_file, path, _opts}, _from, state) do
-    Credo.CLI.main(["--strict", "--mute-exit-status", path])
+    CredoCLI.main(["--strict", "--mute-exit-status", path])
 
     {:reply, :ok, state}
   end
 
   def handle_call(:run_all, _from, state) do
-    Credo.CLI.main(["--strict", "--mute-exit-status"])
+    CredoCLI.main(["--strict", "--mute-exit-status"])
 
     {:reply, :ok, state}
   end
