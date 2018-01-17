@@ -172,7 +172,7 @@ defmodule Cortex.TestRunner do
       task =
         Task.async(ExUnit, :run, [])
 
-      ExUnit.Server.cases_loaded()
+      test_modules_loaded()
 
       Task.await(task, :infinity)
 
@@ -185,6 +185,12 @@ defmodule Cortex.TestRunner do
 
       {:error, compiler_error_descs}
     end
+  end
+
+  if function_exported?(ExUnit.Server, :cases_loaded, 0) do
+    defp test_modules_loaded, do: ExUnit.Server.cases_loaded()
+  else
+    defp test_modules_loaded, do: ExUnit.Server.modules_loaded()
   end
 
   defp all_test_files do
