@@ -1,5 +1,6 @@
 Unknown function 'Elixir.ExUnit':configure/1
 Unknown function 'Elixir.ExUnit.Server':cases_loaded/0
+Unknown function 'Elixir.ExUnit.Server':modules_loaded/0
 Unknown function 'Elixir.IEx.Helpers':recompile/0
 Unknown function 'Elixir.Mix':env/0
 Unknown function 'Elixir.Mix.Project':app_path/0
