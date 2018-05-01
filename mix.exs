@@ -56,7 +56,7 @@ defmodule Cortex.Mixfile do
   defp deps do
     [
       {:file_system, "~> 0.2"},
-      {:credo, "~> 0.8", only: [:dev, :test]},
+      {:credo, "~> 0.9", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:ex_dash, "~> 0.1.0", only: [:dev]},
