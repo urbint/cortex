@@ -1,4 +1,18 @@
 
+0.5.0 / 2018-05-01
+==================
+
+  * feat: Elixir 1.6 support
+  * chore(test_runner): make credo pass
+  * fix(reloader): handle KeyError.t
+  * fix(reloader): handle undefined function error
+  * build(ci): Add configuration for CircleCI
+  * build(): install inotify-tools in CI
+  * docs(): Add CircleCI status badge
+  * build(): Add CircleCI config
+  * chore(): Add Dialyzer and fix all errors
+  * chore(): Add Credo and fix all errors
+
 0.4.2 / 2017-09-20
 ==================
 
