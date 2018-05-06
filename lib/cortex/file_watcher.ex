@@ -8,6 +8,7 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
+  @throttle_timer 100
 
   ##########################################
   # Public API
@@ -28,14 +29,21 @@ defmodule Cortex.FileWatcher do
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid}}
+    {:ok, %{watcher_pid: watcher_pid, throttling: false}}
   end
 
   def handle_info({:file_event, watcher_pid, {path, _events}},
-                  %{watcher_pid: watcher_pid} = state) do
-    GenServer.cast(Controller, {:file_changed, file_type(path), path})
+                  %{watcher_pid: watcher_pid, throttling: throttling} = state) do
+    unless throttling do
+      GenServer.cast(Controller, {:file_changed, file_type(path), path})
+      Process.send_after(self(), :throttle_timer_complete, @throttle_timer)
+    end
 
-    {:noreply, state}
+    {:noreply, %{state | throttling: true}}
+  end
+
+  def handle_info(:throttle_timer_complete, state) do
+    {:noreply, %{state | throttling: false}}
   end
 
   def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid} = state) do
