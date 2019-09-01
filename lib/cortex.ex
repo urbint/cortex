@@ -47,7 +47,6 @@ defmodule Cortex do
   """
   defdelegate all, to: Cortex.Controller, as: :run_all
 
-
   @doc """
   Set the current focus for all Cortex stages to which it applies.
 
@@ -72,11 +71,9 @@ defmodule Cortex do
   def focus(focus),
     do: Cortex.Controller.set_focus(focus)
 
-
   @doc """
   Clear the focus for all Cortex stages.
 
   """
   defdelegate unfocus, to: Cortex.Controller, as: :clear_focus
-
 end

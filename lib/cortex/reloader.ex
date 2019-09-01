@@ -10,19 +10,16 @@ defmodule Cortex.Reloader do
 
   @behaviour Cortex.Controller.Stage
 
-
-
   ##########################################
   # Public API
   ##########################################
 
-  @spec start_link :: GenServer.on_start
+  @spec start_link :: GenServer.on_start()
   def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-
-  @spec reload_file(Path.t) :: :ok | {:error, binary}
+  @spec reload_file(Path.t()) :: :ok | {:error, binary}
   def reload_file(path) do
     GenServer.call(__MODULE__, {:reload_file, path}, :infinity)
   end
@@ -31,8 +28,6 @@ defmodule Cortex.Reloader do
   def recompile do
     GenServer.call(__MODULE__, {:recompile}, :infinity)
   end
-
-
 
   ##########################################
   # Controller Stage Callbacks
@@ -59,8 +54,6 @@ defmodule Cortex.Reloader do
   @impl Cortex.Controller.Stage
   def cancel_on_error?, do: true
 
-
-
   ##########################################
   # GenServer Callbacks
   ##########################################
@@ -70,11 +63,9 @@ defmodule Cortex.Reloader do
     {:ok, %{paths_with_errors: MapSet.new()}}
   end
 
-
   @impl GenServer
   def handle_call({:reload_file, path}, _from, state) do
-    restore_opts =
-      Code.compiler_options()
+    restore_opts = Code.compiler_options()
 
     Code.compiler_options(ignore_module_conflict: true)
 
@@ -86,9 +77,7 @@ defmodule Cortex.Reloader do
           if MapSet.member?(state.paths_with_errors, path) do
             Logger.warn("Compiler errors resolved for path: #{path}")
 
-            %{state |
-              paths_with_errors: MapSet.delete(state.paths_with_errors, path)
-            }
+            %{state | paths_with_errors: MapSet.delete(state.paths_with_errors, path)}
           else
             state
           end
@@ -96,14 +85,9 @@ defmodule Cortex.Reloader do
         {:ok, state}
       rescue
         ex ->
-          state =
-            %{state |
-              paths_with_errors: MapSet.put(state.paths_with_errors, path)
-            }
+          state = %{state | paths_with_errors: MapSet.put(state.paths_with_errors, path)}
 
-          error_module =
-            ex.__struct__
-            |> Module.split() |> Enum.reverse() |> hd()
+          error_module = ex.__struct__ |> Module.split() |> Enum.reverse() |> hd()
 
           error_message =
             case ex do
@@ -117,7 +101,7 @@ defmodule Cortex.Reloader do
                 "#{error_module}:\n\n\t#{mod}.#{func}/#{arity}\n"
 
               %{key: key, term: term} ->
-                "#{error_module}:\n\n\tterm: #{inspect term} has no key: #{key}"
+                "#{error_module}:\n\n\tterm: #{inspect(term)} has no key: #{key}"
             end
 
           {{:error, error_message}, state}
@@ -133,7 +117,6 @@ defmodule Cortex.Reloader do
     IEx.Helpers.recompile()
     {:reply, :ok, state}
   end
-
 
   ##########################################
   # Private Helpers
