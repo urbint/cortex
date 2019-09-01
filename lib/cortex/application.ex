@@ -9,7 +9,7 @@ defmodule Cortex.Application do
 
   def start(_type, _args) do
     cond do
-      Mix.env in [:dev, :test] ->
+      Mix.env() in [:dev, :test] ->
         children =
           if enabled?() do
             children()
@@ -34,9 +34,10 @@ defmodule Cortex.Application do
     ]
 
     env_specific_children =
-      case Mix.env do
+      case Mix.env() do
         :dev ->
           []
+
         :test ->
           [worker(TestRunner, [])]
       end
@@ -44,15 +45,16 @@ defmodule Cortex.Application do
     children ++ env_specific_children
   end
 
-
   defp enabled? do
     case Application.get_env(:cortex, :enabled, true) do
       bool when is_boolean(bool) ->
         bool
+
       {:system, env_var, default} ->
         get_system_var(env_var, default)
+
       invalid ->
-        raise "Invalid config value for Cortex `:enabled`: #{inspect invalid}"
+        raise "Invalid config value for Cortex `:enabled`: #{inspect(invalid)}"
     end
   end
 
@@ -60,10 +62,13 @@ defmodule Cortex.Application do
     case System.get_env(env_var) do
       nil ->
         default
+
       truthy when truthy in ["YES", "yes", "true", "TRUE", "1"] ->
         true
+
       falsey when falsey in ["NO", "no", "false", "FALSE", "0"] ->
         false
+
       _ ->
         raise "Unparsable Cortex Environment Variable '#{env_var}'"
     end

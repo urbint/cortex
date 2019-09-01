@@ -9,8 +9,7 @@ defmodule Hello do
   ]
 
   def hi() do
-    b =
-      %Hello{field_b: "blah"}
+    b = %Hello{field_b: "blah"}
 
     b
   end

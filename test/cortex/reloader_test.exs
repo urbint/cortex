@@ -10,8 +10,7 @@ defmodule Cortex.ReloaderTest do
   end
 
   setup do
-    {:ok, initial_state} =
-      Reloader.init([])
+    {:ok, initial_state} = Reloader.init([])
 
     {:ok, state: initial_state}
   end
@@ -20,27 +19,24 @@ defmodule Cortex.ReloaderTest do
     test "recompiles a file", %{state: state} do
       path = fixture_for("hello.ex")
 
-      {:reply, :ok, _} =
-        Reloader.handle_call({:reload_file, path}, nil, state)
+      {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
 
       assert Hello.hi() == "hello"
 
       path = fixture_for("hello_2.ex")
 
-      {:reply, :ok, _} =
-        Reloader.handle_call({:reload_file, path}, nil, state)
+      {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
 
       assert Hello.hi() == "goodbye"
     end
 
     test "exposes misc errors", %{state: state} do
-      error_file_paths =
-        [
-          "hello_undefined_type.ex",
-          "hello_bad_string.ex",
-          "hello_bad_comma.ex",
-          "hello_does_not_exist.ex",
-        ]
+      error_file_paths = [
+        "hello_undefined_type.ex",
+        "hello_bad_string.ex",
+        "hello_bad_comma.ex",
+        "hello_does_not_exist.ex"
+      ]
 
       for path <- error_file_paths do
         assert_errors_found_for_fixture_path(path, state)
@@ -48,8 +44,7 @@ defmodule Cortex.ReloaderTest do
     end
 
     defp assert_errors_found_for_fixture_path(path, state) do
-      path =
-        fixture_for(path)
+      path = fixture_for(path)
 
       {:reply, {:error, error_message}, state} =
         Reloader.handle_call({:reload_file, path}, nil, state)
