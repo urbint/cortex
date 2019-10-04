@@ -2,6 +2,7 @@ Unreleased
 ==========
 
   * feat: File throttling to prevent files being compiled multiple times in quick succession and tests being run multiple times due to one "change".
+  * feat: by default clear the screen before each test run (configurable with `clear_before_running_tests`)
 
 0.5.0 / 2018-05-01
 ==================
