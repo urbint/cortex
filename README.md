@@ -117,6 +117,15 @@ config :cortex,
   disabled: {:system, "CI_RUN", false}
 ```
 
+## Configuring
+
+```ex
+config :cortex,
+  clear_before_running_tests: true
+```
+
+Set `clear_before_running_tests` to clear the screen immediately before running tests, defaults to true.
+
 ## Phoenix
 
 If you are running a phoenix application,

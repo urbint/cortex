@@ -144,6 +144,10 @@ defmodule Cortex.TestRunner do
     # present
     if focus == nil, do: clear_focus()
 
+    if Application.get_env(:cortex, :clear_before_running_tests, true) do
+      IEx.Helpers.clear()
+    end
+
     files_to_load = [test_helper | files]
 
     compiler_errors =

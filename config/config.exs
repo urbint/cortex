@@ -30,4 +30,5 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 config :cortex,
   enabled: {:system, "CORTEX_ENABLED", true},
-  disabled: {:system, "CORTEX_DISABLED", false}
+  disabled: {:system, "CORTEX_DISABLED", false},
+  clear_before_running_tests: true
