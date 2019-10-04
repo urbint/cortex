@@ -8,6 +8,11 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
+  @throttle_timeout_ms 100
+
+  defmodule State do
+    defstruct [:watcher_pid, :file_events, :throttle_timer]
+  end
 
   ##########################################
   # Public API
@@ -26,14 +31,21 @@ defmodule Cortex.FileWatcher do
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid}}
+    {:ok, %State{watcher_pid: watcher_pid, throttle_timer: nil, file_events: %{}}}
   end
 
   def handle_info(
         {:file_event, watcher_pid, {path, _events}},
         %{watcher_pid: watcher_pid} = state
       ) do
-    GenServer.cast(Controller, {:file_changed, file_type(path), path})
+    %State{file_events: file_events, throttle_timer: throttle_timer} = state
+
+    unless throttle_timer do
+      Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
+    end
+
+    file_events = Map.put(file_events, path, file_type(path))
+    state = %State{state | file_events: file_events}
 
     {:noreply, state}
   end
@@ -42,6 +54,16 @@ defmodule Cortex.FileWatcher do
     Logger.info("File watcher stopped.")
 
     {:noreply, state}
+  end
+
+  def handle_info(:throttle_timer_complete, state) do
+    %State{file_events: file_events} = state
+
+    Enum.each(file_events, fn {path, file_type} ->
+      GenServer.cast(Controller, {:file_changed, file_type, path})
+    end)
+
+    {:noreply, %State{state | file_events: %{}}}
   end
 
   def handle_info(data, state) do
