@@ -108,6 +108,14 @@ Then, to run cortex you would start `iex` with the following options:
 CORTEX_ENABLED=true iex -S mix
 ```
 
+An inverted but otherwise identical `disabled` config option is also supported.
+This can be used to enable cortex by default but automatically disable it in
+certain unwanted contexts (like build environments):
+
+```ex
+config :cortex,
+  disabled: {:system, "CI_RUN", false}
+```
 
 ## Phoenix
 
