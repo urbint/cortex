@@ -40,12 +40,13 @@ defmodule Cortex.FileWatcher do
       ) do
     %State{file_events: file_events, throttle_timer: throttle_timer} = state
 
-    unless throttle_timer do
-      Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
-    end
+    throttle_timer =
+      unless throttle_timer do
+        Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
+      end
 
     file_events = Map.put(file_events, path, file_type(path))
-    state = %State{state | file_events: file_events}
+    state = %State{state | file_events: file_events, throttle_timer: throttle_timer}
 
     {:noreply, state}
   end
@@ -63,7 +64,7 @@ defmodule Cortex.FileWatcher do
       GenServer.cast(Controller, {:file_changed, file_type, path})
     end)
 
-    {:noreply, %State{state | file_events: %{}}}
+    {:noreply, %State{state | file_events: %{}, throttle_timer: nil}}
   end
 
   def handle_info(data, state) do
