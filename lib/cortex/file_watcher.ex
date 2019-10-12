@@ -38,15 +38,10 @@ defmodule Cortex.FileWatcher do
         {:file_event, watcher_pid, {path, _events}},
         %{watcher_pid: watcher_pid} = state
       ) do
-    %State{file_events: file_events, throttle_timer: throttle_timer} = state
-
-    throttle_timer =
-      unless throttle_timer do
-        Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
-      end
-
-    file_events = Map.put(file_events, path, file_type(path))
-    state = %State{state | file_events: file_events, throttle_timer: throttle_timer}
+    state =
+      state
+      |> maybe_update_throttle_timer()
+      |> track_file_events(path)
 
     {:noreply, state}
   end
@@ -76,6 +71,18 @@ defmodule Cortex.FileWatcher do
   ##########################################
   # Private Helpers
   ##########################################
+
+  defp maybe_update_throttle_timer(%State{throttle_timer: nil} = state) do
+    throttle_timer = Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
+    %State{state | throttle_timer: throttle_timer}
+  end
+
+  defp maybe_update_throttle_timer(state), do: state
+
+  defp track_file_events(%State{file_events: file_events} = state, path) do
+    file_events = Map.put(file_events, path, file_type(path))
+    %State{state | file_events: file_events}
+  end
 
   # public only because it is tested
   @spec file_type(Path.t()) :: :lib | :test | :unknown
