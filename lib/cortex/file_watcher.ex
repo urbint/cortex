@@ -8,30 +8,50 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
-  @throttle_timeout_ms 100
+  @default_throttle_timeout_ms 100
+  @default_file_changed_receiver Controller
 
   defmodule State do
-    defstruct [:watcher_pid, :file_events, :throttle_timer]
+    defstruct [
+      :watcher_pid,
+      :file_events,
+      :throttle_timer,
+      :throttle_timeout_ms,
+      :file_changed_receiver
+    ]
   end
 
   ##########################################
   # Public API
   ##########################################
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [])
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts)
   end
 
   ##########################################
   # GenServer Callbacks
   ##########################################
 
-  def init(_) do
+  def init(opts) do
+    throttle_timeout_ms = Keyword.get(opts, :throttle_timeout_ms, @default_throttle_timeout_ms)
+
+    file_changed_receiver =
+      Keyword.get(opts, :file_changed_receiver, @default_file_changed_receiver)
+
     {:ok, watcher_pid} = FileSystem.start_link(dirs: watched_dirs())
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %State{watcher_pid: watcher_pid, throttle_timer: nil, file_events: %{}}}
+    initial_state = %State{
+      watcher_pid: watcher_pid,
+      throttle_timer: nil,
+      throttle_timeout_ms: throttle_timeout_ms,
+      file_changed_receiver: file_changed_receiver,
+      file_events: %{}
+    }
+
+    {:ok, initial_state}
   end
 
   def handle_info(
@@ -53,10 +73,10 @@ defmodule Cortex.FileWatcher do
   end
 
   def handle_info(:throttle_timer_complete, state) do
-    %State{file_events: file_events} = state
+    %State{file_events: file_events, file_changed_receiver: file_changed_receiver} = state
 
     Enum.each(file_events, fn {path, file_type} ->
-      GenServer.cast(Controller, {:file_changed, file_type, path})
+      GenServer.cast(file_changed_receiver, {:file_changed, file_type, path})
     end)
 
     {:noreply, %State{state | file_events: %{}, throttle_timer: nil}}
@@ -73,7 +93,8 @@ defmodule Cortex.FileWatcher do
   ##########################################
 
   defp maybe_update_throttle_timer(%State{throttle_timer: nil} = state) do
-    throttle_timer = Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
+    %State{throttle_timeout_ms: throttle_timeout_ms} = state
+    throttle_timer = Process.send_after(self(), :throttle_timer_complete, throttle_timeout_ms)
     %State{state | throttle_timer: throttle_timer}
   end
 
