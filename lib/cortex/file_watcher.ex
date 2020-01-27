@@ -8,6 +8,11 @@ defmodule Cortex.FileWatcher do
   use GenServer
 
   @watched_dirs ["lib/", "test/", "apps/"]
+  @throttle_timeout_ms 100
+
+  defmodule State do
+    defstruct [:watcher_pid, :file_events, :throttle_timer]
+  end
 
   ##########################################
   # Public API
@@ -26,14 +31,17 @@ defmodule Cortex.FileWatcher do
 
     FileSystem.subscribe(watcher_pid)
 
-    {:ok, %{watcher_pid: watcher_pid}}
+    {:ok, %State{watcher_pid: watcher_pid, throttle_timer: nil, file_events: %{}}}
   end
 
   def handle_info(
         {:file_event, watcher_pid, {path, _events}},
         %{watcher_pid: watcher_pid} = state
       ) do
-    GenServer.cast(Controller, {:file_changed, file_type(path), path})
+    state =
+      state
+      |> maybe_update_throttle_timer()
+      |> track_file_events(path)
 
     {:noreply, state}
   end
@@ -42,6 +50,16 @@ defmodule Cortex.FileWatcher do
     Logger.info("File watcher stopped.")
 
     {:noreply, state}
+  end
+
+  def handle_info(:throttle_timer_complete, state) do
+    %State{file_events: file_events} = state
+
+    Enum.each(file_events, fn {path, file_type} ->
+      GenServer.cast(Controller, {:file_changed, file_type, path})
+    end)
+
+    {:noreply, %State{state | file_events: %{}, throttle_timer: nil}}
   end
 
   def handle_info(data, state) do
@@ -53,6 +71,18 @@ defmodule Cortex.FileWatcher do
   ##########################################
   # Private Helpers
   ##########################################
+
+  defp maybe_update_throttle_timer(%State{throttle_timer: nil} = state) do
+    throttle_timer = Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
+    %State{state | throttle_timer: throttle_timer}
+  end
+
+  defp maybe_update_throttle_timer(state), do: state
+
+  defp track_file_events(%State{file_events: file_events} = state, path) do
+    file_events = Map.put(file_events, path, file_type(path))
+    %State{state | file_events: file_events}
+  end
 
   # public only because it is tested
   @spec file_type(Path.t()) :: :lib | :test | :unknown

@@ -1,3 +1,7 @@
+Unreleased
+==========
+
+  * feat: File throttling to prevent files being compiled multiple times in quick succession and tests being run multiple times due to one "change".
 
 0.5.0 / 2018-05-01
 ==================
