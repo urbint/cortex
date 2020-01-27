@@ -29,4 +29,5 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 config :cortex,
-  enabled: {:system, "CORTEX_ENABLED", true}
+  enabled: {:system, "CORTEX_ENABLED", true},
+  disabled: {:system, "CORTEX_DISABLED", false}

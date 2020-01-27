@@ -11,7 +11,7 @@ defmodule Cortex.Application do
     cond do
       Mix.env() in [:dev, :test] ->
         children =
-          if enabled?() do
+          if autostart?() do
             children()
           else
             []
@@ -45,17 +45,22 @@ defmodule Cortex.Application do
     children ++ env_specific_children
   end
 
-  defp enabled? do
-    case Application.get_env(:cortex, :enabled, true) do
-      bool when is_boolean(bool) ->
-        bool
+  defp autostart? do
+    [enabled, disabled] =
+      for {config, default} <- [enabled: true, disabled: false] do
+        case Application.get_env(:cortex, config, default) do
+          bool when is_boolean(bool) ->
+            bool
 
-      {:system, env_var, default} ->
-        get_system_var(env_var, default)
+          {:system, env_var, default} ->
+            get_system_var(env_var, default)
 
-      invalid ->
-        raise "Invalid config value for Cortex `:enabled`: #{inspect(invalid)}"
-    end
+          invalid ->
+            raise "Invalid config value for Cortex `#{config}`: #{inspect(invalid)}"
+        end
+      end
+
+    enabled and not disabled
   end
 
   defp get_system_var(env_var, default) do
