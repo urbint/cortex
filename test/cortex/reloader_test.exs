@@ -19,13 +19,17 @@ defmodule Cortex.ReloaderTest do
     test "recompiles a file", %{state: state} do
       path = fixture_for("hello.ex")
 
-      {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
+      assert ExUnit.CaptureLog.capture_log(fn ->
+               {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
+             end) =~ "reloaded test/fixtures/hello.ex"
 
       assert Hello.hi() == "hello"
 
       path = fixture_for("hello_2.ex")
 
-      {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
+      assert ExUnit.CaptureLog.capture_log(fn ->
+               {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
+             end) =~ "reloaded test/fixtures/hello_2.ex"
 
       assert Hello.hi() == "goodbye"
     end
