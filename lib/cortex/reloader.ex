@@ -109,11 +109,16 @@ defmodule Cortex.Reloader do
 
     Code.compiler_options(restore_opts)
 
+    if result == :ok do
+      Logger.debug("[cortex] reloaded #{path}")
+    end
+
     {:reply, result, state}
   end
 
   @impl GenServer
   def handle_call({:recompile}, _from, state) do
+    Logger.debug("[cortex] recompiling project")
     IEx.Helpers.recompile()
     {:reply, :ok, state}
   end
