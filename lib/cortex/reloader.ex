@@ -71,7 +71,7 @@ defmodule Cortex.Reloader do
 
     {result, state} =
       try do
-        Code.load_file(path)
+        Code.compile_file(path)
 
         state =
           if MapSet.member?(state.paths_with_errors, path) do
