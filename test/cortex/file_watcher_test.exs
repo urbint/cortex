@@ -18,7 +18,7 @@ defmodule Cortex.FileWatcherTest do
 
     send_file_event(watcher, watcher_pid, path, [:created, :modified])
 
-    assert_receive {:"$gen_cast", {:file_changed, :test, path}}
+    assert_receive {:"$gen_cast", {:file_changed, :test, ^path}}
     refute_receive {:"$gen_cast", {:file_changed, :lib, _}}
   end
 
@@ -31,7 +31,7 @@ defmodule Cortex.FileWatcherTest do
     send_file_event(watcher, watcher_pid, path, [:inodemetamod, :modified])
     send_file_event(watcher, watcher_pid, path, [:inodemetamod, :modified])
 
-    assert_receive {:"$gen_cast", {:file_changed, :lib, path}}
+    assert_receive {:"$gen_cast", {:file_changed, :lib, ^path}}
     refute_receive {:"$gen_cast", {:file_changed, :lib, _}}
   end
 
@@ -47,8 +47,8 @@ defmodule Cortex.FileWatcherTest do
     send_file_event(watcher, watcher_pid, path2, [:created, :modified])
     send_file_event(watcher, watcher_pid, path1, [:inodemetamod, :modified])
 
-    assert_receive {:"$gen_cast", {:file_changed, :lib, path1}}
-    assert_receive {:"$gen_cast", {:file_changed, :lib, path2}}
+    assert_receive {:"$gen_cast", {:file_changed, :lib, ^path1}}
+    assert_receive {:"$gen_cast", {:file_changed, :lib, ^path2}}
     refute_receive {:"$gen_cast", {:file_changed, :lib, _}}
   end
 
