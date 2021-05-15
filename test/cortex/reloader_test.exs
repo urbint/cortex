@@ -17,12 +17,6 @@ defmodule Cortex.ReloaderTest do
 
   describe "recompiles files" do
     test "recompiles a file", %{state: state} do
-      path = fixture_for("hello.ex")
-
-      assert ExUnit.CaptureLog.capture_log(fn ->
-               {:reply, :ok, _} = Reloader.handle_call({:reload_file, path}, nil, state)
-             end) =~ "reloaded test/fixtures/hello.ex"
-
       assert Hello.hi() == "hello"
 
       path = fixture_for("hello_2.ex")

@@ -12,7 +12,9 @@ defmodule Cortex.Mixfile do
       deps: deps(),
       package: package(),
       description: description(),
-      dialyzer: [ignore_warnings: "./.dialyzer-ignore-warnings.txt"]
+      dialyzer: [ignore_warnings: "./.dialyzer-ignore-warnings.txt"],
+      elixirc_paths: elixir_paths(Mix.env()),
+      xref: [exclude: [IEx.Helpers]]
     ]
   end
 
@@ -62,4 +64,7 @@ defmodule Cortex.Mixfile do
       {:ex_dash, "~> 0.1.0", only: [:dev]}
     ]
   end
+
+  def elixir_paths(:test), do: ["lib", "test/fixtures/initials"]
+  def elixir_paths(_), do: ["lib"]
 end

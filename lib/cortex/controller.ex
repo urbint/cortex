@@ -16,7 +16,7 @@ defmodule Cortex.Controller do
   # Public API
   ##########################################
 
-  def start_link do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -152,7 +152,7 @@ defmodule Cortex.Controller do
     result = cb.(stage)
 
     continue? =
-      !stage.cancel_on_error? or
+      !stage.cancel_on_error?() or
         !match?({:error, _}, result)
 
     {result, continue?}
