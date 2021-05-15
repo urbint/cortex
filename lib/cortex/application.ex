@@ -25,24 +25,16 @@ defmodule Cortex.Application do
   end
 
   defp children do
-    import Supervisor.Spec, warn: false
-
-    children = [
-      worker(FileWatcher, []),
-      worker(Reloader, []),
-      worker(Controller, [])
-    ]
-
     env_specific_children =
       case Mix.env() do
         :dev ->
           []
 
         :test ->
-          [worker(TestRunner, [])]
+          [TestRunner]
       end
 
-    children ++ env_specific_children
+    [FileWatcher, Reloader, Controller] ++ env_specific_children
   end
 
   defp autostart? do
