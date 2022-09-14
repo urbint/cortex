@@ -132,7 +132,7 @@ If you are running a phoenix application,
 make sure you are running the app in interactive mode:
 
 ```sh
-iex -S mix phoenix.server
+iex -S mix phx.server
 ```
 
 
